@@ -46,7 +46,7 @@ fun SinkLogo(size: Dp = 56.dp, modifier: Modifier = Modifier) {
             imageVector = Icons.Outlined.Bolt,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onPrimary,
-            modifier = Modifier.size(size * 0.55f),
+            modifier = Modifier.size(size * 0.48f),
         )
     }
 }
