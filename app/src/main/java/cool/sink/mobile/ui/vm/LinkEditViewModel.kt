@@ -10,6 +10,7 @@ import cool.sink.mobile.data.EditLinkPayload
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.util.decodeUrlForDisplay
 import cool.sink.mobile.util.isValidHttpUrl
 import cool.sink.mobile.util.normalizeTag
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,7 @@ class LinkEditViewModel(
     val state: StateFlow<UiState> = _state.asStateFlow()
 
     private var original: Link? = null
+    private var originalUrl: String? = null
 
     init {
         loadTags()
@@ -94,7 +96,12 @@ class LinkEditViewModel(
     fun save() {
         val snapshot = _state.value
         if (snapshot.saving) return
-        if (!isValidHttpUrl(snapshot.url)) {
+        val enteredUrl = snapshot.url.trim()
+        // The editor shows a decoded URL; keep the stored encoding when it was not edited.
+        val resolvedUrl = originalUrl
+            ?.takeIf { enteredUrl == decodeUrlForDisplay(it) }
+            ?: enteredUrl
+        if (!isValidHttpUrl(resolvedUrl)) {
             _state.update { it.copy(urlError = "请输入以 http:// 或 https:// 开头的完整链接") }
             return
         }
@@ -111,7 +118,7 @@ class LinkEditViewModel(
                 if (existing == null) {
                     repository.createLink(
                         CreateLinkPayload(
-                            url = snapshot.url.trim(),
+                            url = resolvedUrl,
                             slug = slug.ifEmpty { null },
                             comment = comment,
                             expiration = snapshot.expiration,
@@ -122,7 +129,7 @@ class LinkEditViewModel(
                     repository.editLink(
                         EditLinkPayload.from(
                             original = existing,
-                            url = snapshot.url.trim(),
+                            url = resolvedUrl,
                             comment = comment,
                             expiration = snapshot.expiration,
                             tags = snapshot.tags,
@@ -141,11 +148,12 @@ class LinkEditViewModel(
             try {
                 val link = repository.link(slug)
                 original = link
+                originalUrl = link.url
                 _state.update {
                     it.copy(
                         loading = false,
                         slug = link.slug,
-                        url = link.url,
+                        url = decodeUrlForDisplay(link.url),
                         comment = link.comment.orEmpty(),
                         expiration = link.expiration,
                         tags = link.tags,
