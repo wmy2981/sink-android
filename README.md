@@ -86,6 +86,7 @@ Authentication uses the `Authorization: Bearer <NUXT_SITE_TOKEN>` header.
 
 - Site-token authentication only; interactive Cloudflare Access browser login is not supported.
 - Image upload requires R2, AI suggestions require Workers AI, and reverse proxy mode must be enabled on the instance; the app shows a clear error when a feature is unavailable.
+- The random-slug button follows the instance's `NUXT_PUBLIC_SLUG_DEFAULT_LENGTH`. If the dashboard page cannot be read (for example behind Cloudflare Access), it falls back to 6 characters.
 - The device must be able to reach the instance directly. For LAN-only instances, keep the phone on the same network.
 
 ## Project structure

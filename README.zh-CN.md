@@ -86,6 +86,7 @@ Release 签名通过仓库 Secrets 注入：`KEYSTORE_BASE64`、`KEYSTORE_PASSWO
 
 - 仅支持站点令牌认证，暂不支持 Cloudflare Access 的交互式浏览器登录。
 - 图片上传需要实例配置 R2，AI 建议需要绑定 Workers AI，反向代理模式需要在实例上开启；实例不支持时应用会给出明确提示。
+- 随机短码按钮跟随实例的 `NUXT_PUBLIC_SLUG_DEFAULT_LENGTH`；若无法读取 dashboard 页面（例如被 Cloudflare Access 拦截），会回退为 6 位。
 - 需要设备可直接访问实例地址；自建实例若只在内网，请确保手机处于同一网络。
 
 ## 目录结构
