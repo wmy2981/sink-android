@@ -1,6 +1,11 @@
 package cool.sink.mobile.ui
 
 import android.net.Uri
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -51,7 +56,24 @@ fun SinkApp(container: AppContainer) {
                 if (current.isConnected) Routes.LINKS else Routes.CONNECT
             }
 
-            NavHost(navController = navController, startDestination = startDestination) {
+            NavHost(
+                navController = navController,
+                startDestination = startDestination,
+                enterTransition = {
+                    slideInHorizontally(animationSpec = tween(240)) { fullWidth -> fullWidth }
+                },
+                exitTransition = {
+                    slideOutHorizontally(animationSpec = tween(240)) { fullWidth -> -fullWidth / 4 } +
+                        fadeOut(animationSpec = tween(180))
+                },
+                popEnterTransition = {
+                    slideInHorizontally(animationSpec = tween(240)) { fullWidth -> -fullWidth / 4 } +
+                        fadeIn(animationSpec = tween(180))
+                },
+                popExitTransition = {
+                    slideOutHorizontally(animationSpec = tween(240)) { fullWidth -> fullWidth }
+                },
+            ) {
                 composable(Routes.CONNECT) {
                     ConnectScreen(
                         repository = container.repository,
