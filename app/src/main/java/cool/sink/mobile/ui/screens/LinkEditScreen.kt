@@ -141,7 +141,6 @@ fun LinkEditScreen(
                     onValueChange = viewModel::onUrlChange,
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("目标地址") },
-                    placeholder = { Text("https://example.com/page") },
                     isError = state.urlError != null,
                     supportingText = {
                         Text(state.urlError ?: "短链会跳转到这个地址")
