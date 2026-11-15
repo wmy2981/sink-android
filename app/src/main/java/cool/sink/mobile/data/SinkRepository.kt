@@ -3,6 +3,7 @@ package cool.sink.mobile.data
 import cool.sink.mobile.R
 import cool.sink.mobile.util.UiText
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.parseSlugDefaultLength
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import okhttp3.MediaType.Companion.toMediaType
@@ -91,6 +92,11 @@ class SinkRepository(
     suspend fun deleteLink(slug: String) = wrap { api().deleteLink(DeleteLinkPayload(slug)) }
 
     suspend fun generateSlug(url: String): String = wrap { api().generateSlug(url).slug }
+
+    /** The instance's configured random-slug length, or null when it can't be read. */
+    suspend fun slugDefaultLength(): Int? = wrap {
+        api().dashboardHtml().use { body -> parseSlugDefaultLength(body.string()) }
+    }
 
     suspend fun generateOg(url: String, locale: String?): AiOgResponse = wrap { api().generateOg(url, locale) }
 

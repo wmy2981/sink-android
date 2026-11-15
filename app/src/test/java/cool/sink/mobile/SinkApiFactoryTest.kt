@@ -105,6 +105,23 @@ class SinkApiFactoryTest {
     }
 
     @Test
+    fun `dashboard html request keeps an explicit accept header`() {
+        val html = """<script>window.__NUXT__={};window.__NUXT__.config={public:{slugDefaultLength:"8"}}</script>"""
+        server.enqueue(
+            MockResponse().setResponseCode(200).setHeader("Content-Type", "text/html").setBody(html),
+        )
+
+        val api = factory.create(server.url("/").toString(), "token")
+        val body = kotlinx.coroutines.runBlocking { api.dashboardHtml().use { it.string() } }
+
+        assertEquals(html, body)
+        val request = server.takeRequest()
+        assertEquals("/dashboard", request.path)
+        assertEquals("text/html", request.getHeader("Accept"))
+        assertEquals("Bearer token", request.getHeader("Authorization"))
+    }
+
+    @Test
     fun `normalizeBaseUrl adds scheme and trailing slash`() {
         assertEquals("https://sink.example.com/", SinkApiFactory.normalizeBaseUrl("sink.example.com"))
         assertEquals("https://sink.example.com/", SinkApiFactory.normalizeBaseUrl(" https://sink.example.com "))

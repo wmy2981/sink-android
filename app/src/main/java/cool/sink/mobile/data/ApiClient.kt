@@ -45,7 +45,7 @@ class SinkApiFactory {
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .header("Authorization", "Bearer $token")
-                    .header("Accept", "application/json")
+                    .header("Accept", chain.request().header("Accept") ?: "application/json")
                     .build()
                 chain.proceed(request)
             }

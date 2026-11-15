@@ -92,6 +92,19 @@ val IMAGE_MIME_TYPES = setOf("image/jpeg", "image/png", "image/webp", "image/gif
 
 private const val SLUG_ALPHABET = "23456789abcdefghjkmnpqrstuvwxyz"
 
+/** Sink's documented default for `NUXT_PUBLIC_SLUG_DEFAULT_LENGTH`. */
+const val DEFAULT_SLUG_LENGTH = 6
+
+private val slugDefaultLengthPattern = Regex("""slugDefaultLength\s*:\s*"?(\d{1,4})"?""")
+
+/**
+ * Reads the instance's configured random-slug length from the Nuxt runtime config embedded in
+ * the dashboard HTML. Sink has no API for this value, so parsing the public payload is the only
+ * way to follow the server's `NUXT_PUBLIC_SLUG_DEFAULT_LENGTH`.
+ */
+fun parseSlugDefaultLength(html: String): Int? =
+    slugDefaultLengthPattern.find(html)?.groupValues?.get(1)?.toIntOrNull()?.takeIf { it in 1..2048 }
+
 fun isMaskedLinkPassword(value: String?): Boolean = value?.startsWith(LINK_PASSWORD_MASK_PREFIX) == true
 
 /** Matches Sink's default slug format: six characters, no look-alikes. */

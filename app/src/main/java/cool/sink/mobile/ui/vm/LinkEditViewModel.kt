@@ -11,6 +11,7 @@ import cool.sink.mobile.data.EditLinkPayload
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.util.DEFAULT_SLUG_LENGTH
 import cool.sink.mobile.util.IMAGE_MIME_TYPES
 import cool.sink.mobile.util.MAX_COMMENT_LENGTH
 import cool.sink.mobile.util.MAX_DESCRIPTION_LENGTH
@@ -71,6 +72,8 @@ class LinkEditViewModel(
         val generatingSlug: Boolean = false,
         val generatingOg: Boolean = false,
         val uploadingImage: Boolean = false,
+        val slugLength: Int = DEFAULT_SLUG_LENGTH,
+        val slugLengthLoaded: Boolean = false,
         val urlError: UiText? = null,
         val slugError: UiText? = null,
         val appleError: UiText? = null,
@@ -99,6 +102,7 @@ class LinkEditViewModel(
     init {
         loadTags()
         loadBaseUrl()
+        if (linkSlug == null) loadSlugLength()
         if (linkSlug != null) loadLink(linkSlug)
     }
 
@@ -192,10 +196,21 @@ class LinkEditViewModel(
         }
     }
 
-    /** Random slug in the same alphabet Sink uses for its own generator. */
+    /** Random slug in the same alphabet and configured length the instance uses. */
     fun generateRandomSlug() {
         if (_state.value.isEdit) return
-        _state.update { it.copy(slug = randomSlug(), slugError = null) }
+        viewModelScope.launch {
+            val snapshot = _state.value
+            val length = if (snapshot.slugLengthLoaded) {
+                snapshot.slugLength
+            } else {
+                val fetched = runCatching { repository.slugDefaultLength() }.getOrNull()
+                    ?: DEFAULT_SLUG_LENGTH
+                _state.update { it.copy(slugLength = fetched, slugLengthLoaded = true) }
+                fetched
+            }
+            _state.update { it.copy(slug = randomSlug(length), slugError = null) }
+        }
     }
 
     fun generateSlugWithAi() {
@@ -419,6 +434,13 @@ class LinkEditViewModel(
             } catch (error: SinkException) {
                 _state.update { it.copy(loading = false, error = error.text) }
             }
+        }
+    }
+
+    private fun loadSlugLength() {
+        viewModelScope.launch {
+            val length = runCatching { repository.slugDefaultLength() }.getOrNull() ?: return@launch
+            _state.update { it.copy(slugLength = length, slugLengthLoaded = true) }
         }
     }
 

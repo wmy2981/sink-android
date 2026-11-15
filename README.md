@@ -11,7 +11,7 @@ A third-party native Android client for [Sink](https://github.com/ccbikai/Sink),
 - **Connect an instance** — enter the instance URL and `NUXT_SITE_TOKEN`; the app validates them with `/api/verify` before saving.
 - **Link list** — cursor pagination, pull to refresh, and infinite scrolling; search by slug, URL, or note; sort by date or slug; filter by status (active, expired, all) and tags.
 - **Create, edit, delete** — target URL, custom slug, note, expiration date, up to 10 tags, password protection, query forwarding, cloaking, reverse proxy, unsafe warnings, social preview fields (title, description, image), app-store redirects, and geo routing.
-- **Editing helpers** — random or AI-suggested slugs, AI-generated social title and description, a UTM builder, and OpenGraph image upload.
+- **Editing helpers** — random slugs that follow the instance's configured length, AI-suggested slugs, AI-generated social title and description, a UTM builder, and OpenGraph image upload.
 - **Quick actions** — copy the short link, open it in a browser, share it with other apps, or show a QR code.
 - **Appearance** — follow the system theme, or force light or dark; Android 12+ can use the system wallpaper palette.
 - **Localized UI** — English and Simplified Chinese, following the system language.

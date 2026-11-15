@@ -8,11 +8,13 @@ import cool.sink.mobile.util.decodeUrlForDisplay
 import cool.sink.mobile.util.isMaskedLinkPassword
 import cool.sink.mobile.util.isValidHttpUrl
 import cool.sink.mobile.util.normalizeTag
+import cool.sink.mobile.util.parseSlugDefaultLength
 import cool.sink.mobile.util.parseUtmValues
 import cool.sink.mobile.util.randomSlug
 import cool.sink.mobile.util.resolveAssetUrl
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -98,6 +100,14 @@ class FormatsTest {
         val slug = randomSlug()
         assertEquals(6, slug.length)
         assertTrue(slug.all { it in "23456789abcdefghjkmnpqrstuvwxyz" })
+        assertEquals(9, randomSlug(9).length)
+    }
+
+    @Test
+    fun `instance slug length is read from the nuxt payload`() {
+        val html = """<script>window.__NUXT__={};window.__NUXT__.config={public:{previewMode:true,slugDefaultLength:"8",kvBatchLimit:"50"}}</script>"""
+        assertEquals(8, parseSlugDefaultLength(html))
+        assertNull(parseSlugDefaultLength("<html></html>"))
     }
 
     @Test
