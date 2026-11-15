@@ -9,7 +9,7 @@ A third-party native Android client for [Sink](https://github.com/ccbikai/Sink),
 ## Features
 
 - **Connect an instance** — enter the instance URL and `NUXT_SITE_TOKEN`; the app validates them with `/api/verify` before saving.
-- **Link list** — cursor pagination, pull to refresh, and infinite scrolling; search by slug, URL, or note; sort by date or slug; filter by status (active, expired, all) and tags.
+- **Link list** — site icons in the web dashboard style, cursor pagination, pull to refresh, and infinite scrolling; search by slug, URL, or note; sort by date or slug; filter by status (active, expired, all) and tags.
 - **Create, edit, delete** — target URL, custom slug, note, expiration date, up to 10 tags, password protection, query forwarding, cloaking, reverse proxy, unsafe warnings, social preview fields (title, description, image), app-store redirects, and geo routing.
 - **Editing helpers** — random slugs that follow the instance's configured length, AI-suggested slugs, AI-generated social title and description, a UTM builder, and OpenGraph image upload.
 - **Quick actions** — copy the short link, open it in a browser, share it with other apps, or show a QR code.
@@ -87,6 +87,7 @@ Authentication uses the `Authorization: Bearer <NUXT_SITE_TOKEN>` header.
 - Site-token authentication only; interactive Cloudflare Access browser login is not supported.
 - Image upload requires R2, AI suggestions require Workers AI, and reverse proxy mode must be enabled on the instance; the app shows a clear error when a feature is unavailable.
 - The random-slug button follows the instance's `NUXT_PUBLIC_SLUG_DEFAULT_LENGTH`. If the dashboard page cannot be read (for example behind Cloudflare Access), it falls back to 6 characters.
+- Link icons are loaded from `unavatar.webp.se`, the same favicon service the web dashboard uses.
 - The device must be able to reach the instance directly. For LAN-only instances, keep the phone on the same network.
 
 ## Project structure

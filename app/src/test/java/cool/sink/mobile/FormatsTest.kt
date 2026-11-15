@@ -5,6 +5,7 @@ import cool.sink.mobile.data.matchesQuery
 import cool.sink.mobile.util.UtmValues
 import cool.sink.mobile.util.applyUtmValues
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.hostOfLink
 import cool.sink.mobile.util.isMaskedLinkPassword
 import cool.sink.mobile.util.isValidHttpUrl
 import cool.sink.mobile.util.normalizeTag
@@ -101,6 +102,13 @@ class FormatsTest {
         assertEquals(6, slug.length)
         assertTrue(slug.all { it in "23456789abcdefghjkmnpqrstuvwxyz" })
         assertEquals(9, randomSlug(9).length)
+    }
+
+    @Test
+    fun `link host is extracted for favicons`() {
+        assertEquals("github.com", hostOfLink("https://github.com/nuxt"))
+        assertEquals("blog.csdn.net", hostOfLink("https://blog.csdn.net/cxrsdn/article/details/1"))
+        assertNull(hostOfLink("not a url"))
     }
 
     @Test

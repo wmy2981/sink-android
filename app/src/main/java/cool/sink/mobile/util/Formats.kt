@@ -112,6 +112,10 @@ fun randomSlug(length: Int = 6): String = buildString(length) {
     repeat(length) { append(SLUG_ALPHABET.random()) }
 }
 
+/** Host part of a target URL, used for the favicon service. */
+fun hostOfLink(url: String): String? =
+    runCatching { URI(url).host }.getOrNull()?.takeIf { it.isNotBlank() }
+
 /** Turns a stored asset path such as `/_assets/images/...` into an absolute URL. */
 fun resolveAssetUrl(baseUrl: String, path: String): String {
     val trimmed = path.trim()

@@ -33,7 +33,6 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.FilterList
-import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.LinkOff
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.QrCode2
@@ -101,6 +100,7 @@ import cool.sink.mobile.ui.buildShortUrl
 import cool.sink.mobile.ui.components.ConfirmDialog
 import cool.sink.mobile.ui.components.EmptyState
 import cool.sink.mobile.ui.components.InfoRow
+import cool.sink.mobile.ui.components.LinkFavicon
 import cool.sink.mobile.ui.components.QrCodeDialog
 import cool.sink.mobile.ui.components.TagPill
 import cool.sink.mobile.ui.copyToClipboard
@@ -477,13 +477,8 @@ private fun LinkCard(
             modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 6.dp, bottom = 14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    imageVector = Icons.Outlined.Link,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(18.dp),
-                )
-                Spacer(Modifier.width(8.dp))
+                LinkFavicon(url = link.url, size = 36.dp)
+                Spacer(Modifier.width(10.dp))
                 Text(
                     text = buildAnnotatedString {
                         withStyle(
@@ -693,6 +688,8 @@ private fun LinkDetailSheet(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                LinkFavicon(url = link.url, size = 44.dp)
+                Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
                         text = link.slug,
