@@ -1,5 +1,6 @@
 package cool.sink.mobile.data
 
+import cool.sink.mobile.util.decodeUrlForDisplay
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerializationException
@@ -34,8 +35,44 @@ class SinkRepository(
         api().listLinks(limit = limit, cursor = cursor, sort = sort, tag = tag, status = status)
     }
 
-    suspend fun searchLinks(query: String): List<SearchItem> = wrap {
-        api().searchLinks(query = query)
+    suspend fun searchLinks(query: String): List<SearchItem> {
+        val trimmed = query.trim()
+        if (trimmed.isEmpty()) return emptyList()
+        return if (trimmed.any { it.code > 127 }) {
+            searchLinksLocally(trimmed)
+        } else {
+            wrap { api().searchLinks(query = trimmed) }
+        }
+    }
+
+    /**
+     * Sink stores target URLs as submitted, so Chinese characters are usually percent-encoded
+     * and SQL LIKE over the raw URL cannot match the decoded text a user types. Scan the active
+     * links page by page and match against decoded fields instead. Capped to keep it bounded.
+     */
+    private suspend fun searchLinksLocally(query: String): List<SearchItem> {
+        val results = LinkedHashMap<String, SearchItem>()
+        var cursor: String? = null
+        var pages = 0
+        while (pages < 10) {
+            val page = wrap {
+                api().listLinks(limit = 1000, cursor = cursor, sort = "newest", status = "active")
+            }
+            page.links
+                .filter { it.matchesQuery(query) }
+                .forEach { link ->
+                    results[link.slug] = SearchItem(
+                        slug = link.slug,
+                        url = decodeUrlForDisplay(link.url),
+                        comment = link.comment,
+                        tags = link.tags,
+                    )
+                }
+            pages++
+            if (page.listComplete || page.cursor == null) break
+            cursor = page.cursor
+        }
+        return results.values.toList()
     }
 
     suspend fun tags(): List<TagCount> = wrap { api().tags() }
