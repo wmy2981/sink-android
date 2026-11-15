@@ -5,6 +5,9 @@ import cool.sink.mobile.util.UiText
 import cool.sink.mobile.util.decodeUrlForDisplay
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
 
@@ -87,6 +90,28 @@ class SinkRepository(
 
     suspend fun deleteLink(slug: String) = wrap { api().deleteLink(DeleteLinkPayload(slug)) }
 
+    suspend fun generateSlug(url: String): String = wrap { api().generateSlug(url).slug }
+
+    suspend fun generateOg(url: String, locale: String?): AiOgResponse = wrap { api().generateOg(url, locale) }
+
+    /** Uploads an OpenGraph image; the instance must have R2 configured. */
+    suspend fun uploadImage(slug: String, bytes: ByteArray, mimeType: String): String = wrap {
+        val extension = when (mimeType) {
+            "image/jpeg" -> "jpg"
+            "image/png" -> "png"
+            "image/webp" -> "webp"
+            "image/gif" -> "gif"
+            else -> "img"
+        }
+        val file = MultipartBody.Part.createFormData(
+            "file",
+            "image.$extension",
+            bytes.toRequestBody(mimeType.toMediaType()),
+        )
+        val slugPart = slug.toRequestBody("text/plain".toMediaType())
+        api().uploadImage(file, slugPart).url
+    }
+
     private suspend fun api(): SinkApi {
         val settings = settingsStore.current()
         if (!settings.isConnected) throw SinkException(UiText(R.string.error_not_connected))
@@ -113,6 +138,7 @@ class SinkRepository(
         409 -> UiText(R.string.error_conflict)
         423 -> UiText(R.string.error_storage_not_ready)
         429 -> UiText(R.string.error_rate_limited)
+        501 -> UiText(R.string.error_not_supported)
         in 500..599 -> UiText(R.string.error_server, listOf(code))
         else -> UiText(R.string.error_http, listOf(code))
     }

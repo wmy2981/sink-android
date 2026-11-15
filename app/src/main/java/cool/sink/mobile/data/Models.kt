@@ -73,12 +73,24 @@ data class CreateLinkPayload(
     val slug: String? = null,
     val comment: String? = null,
     val expiration: Long? = null,
+    val title: String? = null,
+    val description: String? = null,
+    val image: String? = null,
+    val apple: String? = null,
+    val google: String? = null,
+    val cloaking: Boolean? = null,
+    val redirectWithQuery: Boolean? = null,
+    val proxy: Boolean? = null,
+    val unsafe: Boolean? = null,
+    val password: String? = null,
+    val geo: Map<String, String>? = null,
     val tags: List<String> = emptyList(),
 )
 
 /**
- * The edit endpoint replaces the stored link, so every field the app does not edit is
- * carried over from the fetched link to avoid dropping settings made on the web dashboard.
+ * The edit endpoint replaces the stored link, so every field from the fetched link has to be
+ * sent back. [from] takes the full editable state; `password` is null when the stored password
+ * should be kept, an empty string to clear it, or the new password.
  */
 @Serializable
 data class EditLinkPayload(
@@ -95,6 +107,7 @@ data class EditLinkPayload(
     val redirectWithQuery: Boolean? = null,
     val proxy: Boolean? = null,
     val unsafe: Boolean? = null,
+    val password: String? = null,
     val geo: Map<String, String>? = null,
     val tags: List<String> = emptyList(),
 ) {
@@ -104,26 +117,53 @@ data class EditLinkPayload(
             url: String,
             comment: String?,
             expiration: Long?,
+            title: String?,
+            description: String?,
+            image: String?,
+            apple: String?,
+            google: String?,
+            cloaking: Boolean,
+            redirectWithQuery: Boolean,
+            proxy: Boolean,
+            unsafe: Boolean,
+            password: String?,
+            geo: Map<String, String>?,
             tags: List<String>,
         ) = EditLinkPayload(
             url = url,
             slug = original.slug,
             comment = comment,
             expiration = expiration,
-            title = original.title,
-            description = original.description,
-            image = original.image,
-            apple = original.apple,
-            google = original.google,
-            cloaking = original.cloaking,
-            redirectWithQuery = original.redirectWithQuery,
-            proxy = original.proxy,
-            unsafe = original.unsafe,
-            geo = original.geo,
+            title = title,
+            description = description,
+            image = image,
+            apple = apple,
+            google = google,
+            cloaking = cloaking,
+            redirectWithQuery = redirectWithQuery,
+            proxy = proxy,
+            unsafe = unsafe,
+            password = password,
+            geo = geo,
             tags = tags,
         )
     }
 }
+
+@Serializable
+data class AiSlugResponse(val slug: String = "")
+
+@Serializable
+data class AiOgResponse(
+    val title: String? = null,
+    val description: String? = null,
+)
+
+@Serializable
+data class UploadImageResponse(
+    val url: String,
+    val key: String? = null,
+)
 
 @Serializable
 data class DeleteLinkPayload(val slug: String)

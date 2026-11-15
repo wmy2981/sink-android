@@ -2,9 +2,15 @@ package cool.sink.mobile
 
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.matchesQuery
+import cool.sink.mobile.util.UtmValues
+import cool.sink.mobile.util.applyUtmValues
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.isMaskedLinkPassword
 import cool.sink.mobile.util.isValidHttpUrl
 import cool.sink.mobile.util.normalizeTag
+import cool.sink.mobile.util.parseUtmValues
+import cool.sink.mobile.util.randomSlug
+import cool.sink.mobile.util.resolveAssetUrl
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -53,5 +59,51 @@ class FormatsTest {
         assertFalse(isValidHttpUrl("ftp://example.com"))
         assertFalse(isValidHttpUrl("https://"))
         assertFalse(isValidHttpUrl(""))
+    }
+
+    @Test
+    fun `utm values are parsed and replaced`() {
+        val url = "https://example.com/path?utm_source=old&keep=1#top"
+        val parsed = parseUtmValues(url)
+        assertEquals("old", parsed.source)
+        assertEquals(
+            "https://example.com/path?keep=1&utm_source=news%20letter&utm_medium=email#top",
+            applyUtmValues(url, parsed.copy(source = "news letter", medium = "email")),
+        )
+    }
+
+    @Test
+    fun `empty utm values remove the parameter`() {
+        assertEquals(
+            "https://example.com/?a=1",
+            applyUtmValues("https://example.com/?utm_source=x&a=1", UtmValues()),
+        )
+        assertEquals("https://example.com/", applyUtmValues("https://example.com/", UtmValues()))
+    }
+
+    @Test
+    fun `stored asset paths become absolute`() {
+        assertEquals(
+            "https://sink.example.com/_assets/images/demo/a.png",
+            resolveAssetUrl("https://sink.example.com/", "/_assets/images/demo/a.png"),
+        )
+        assertEquals(
+            "https://cdn.example.com/a.png",
+            resolveAssetUrl("https://sink.example.com/", "https://cdn.example.com/a.png"),
+        )
+    }
+
+    @Test
+    fun `random slugs use sink's default alphabet and length`() {
+        val slug = randomSlug()
+        assertEquals(6, slug.length)
+        assertTrue(slug.all { it in "23456789abcdefghjkmnpqrstuvwxyz" })
+    }
+
+    @Test
+    fun `masked passwords are detected`() {
+        assertTrue(isMaskedLinkPassword("__SINK_MASKED__•••abc"))
+        assertFalse(isMaskedLinkPassword("plain-password"))
+        assertFalse(isMaskedLinkPassword(null))
     }
 }

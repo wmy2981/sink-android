@@ -10,7 +10,8 @@ A third-party native Android client for [Sink](https://github.com/ccbikai/Sink),
 
 - **Connect an instance** — enter the instance URL and `NUXT_SITE_TOKEN`; the app validates them with `/api/verify` before saving.
 - **Link list** — cursor pagination, pull to refresh, and infinite scrolling; search by slug, URL, or note; sort by date or slug; filter by status (active, expired, all) and tags.
-- **Create, edit, delete** — target URL, custom slug, note, expiration date, and up to 10 tags.
+- **Create, edit, delete** — target URL, custom slug, note, expiration date, up to 10 tags, password protection, query forwarding, cloaking, reverse proxy, unsafe warnings, social preview fields (title, description, image), app-store redirects, and geo routing.
+- **Editing helpers** — random or AI-suggested slugs, AI-generated social title and description, a UTM builder, and OpenGraph image upload.
 - **Quick actions** — copy the short link, open it in a browser, share it with other apps, or show a QR code.
 - **Appearance** — follow the system theme, or force light or dark; Android 12+ can use the system wallpaper palette.
 - **Localized UI** — English and Simplified Chinese, following the system language.
@@ -43,7 +44,7 @@ PROPS
 
 Debug build: `./gradlew assembleDebug`.
 
-Unit tests: `./gradlew testDebugUnitTest` (API client, URL normalization, tags, link validation).
+Unit tests: `./gradlew testDebugUnitTest` (API client, URL normalization, tags, link validation, UTM parameters, payload mapping).
 
 ## Localization
 
@@ -75,13 +76,16 @@ Release signing is injected through repository secrets: `KEYSTORE_BASE64`, `KEYS
 | `POST /api/link/create` | Create a link |
 | `PUT /api/link/edit` | Edit a link (preserving advanced fields set on the web) |
 | `POST /api/link/delete` | Delete a link |
+| `GET /api/link/ai` | Suggest a slug with Workers AI |
+| `GET /api/link/og-ai` | Suggest a social title and description with Workers AI |
+| `POST /api/upload/image` | Upload a social preview image (requires R2) |
 
 Authentication uses the `Authorization: Bearer <NUXT_SITE_TOKEN>` header.
 
 ## Known limitations
 
 - Site-token authentication only; interactive Cloudflare Access browser login is not supported.
-- Password protection, geo-routing, URL cloaking, reverse proxying, and other advanced options are not exposed in the app. Values configured on the web are preserved when editing a link.
+- Image upload requires R2, AI suggestions require Workers AI, and reverse proxy mode must be enabled on the instance; the app shows a clear error when a feature is unavailable.
 - The device must be able to reach the instance directly. For LAN-only instances, keep the phone on the same network.
 
 ## Project structure

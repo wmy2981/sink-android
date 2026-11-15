@@ -1,9 +1,13 @@
 package cool.sink.mobile.data
 
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Multipart
 import retrofit2.http.POST
 import retrofit2.http.PUT
+import retrofit2.http.Part
 import retrofit2.http.Query
 
 interface SinkApi {
@@ -39,4 +43,20 @@ interface SinkApi {
 
     @POST("api/link/delete")
     suspend fun deleteLink(@Body payload: DeleteLinkPayload)
+
+    @GET("api/link/ai")
+    suspend fun generateSlug(@Query("url") url: String): AiSlugResponse
+
+    @GET("api/link/og-ai")
+    suspend fun generateOg(
+        @Query("url") url: String,
+        @Query("locale") locale: String? = null,
+    ): AiOgResponse
+
+    @Multipart
+    @POST("api/upload/image")
+    suspend fun uploadImage(
+        @Part file: MultipartBody.Part,
+        @Part("slug") slug: RequestBody,
+    ): UploadImageResponse
 }
