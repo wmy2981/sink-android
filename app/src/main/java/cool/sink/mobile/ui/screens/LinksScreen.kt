@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -667,23 +666,28 @@ private fun LinkCard(
                             label = stringResource(R.string.stat_referers),
                         )
                     }
-                    Spacer(Modifier.weight(1f))
                     if (link.tags.isNotEmpty()) {
+                        val visibleTags = link.tags.take(2)
                         Row(
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            modifier = Modifier.weight(1f),
+                            horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            link.tags.take(2).forEach { tag ->
-                                TagPill(tag, modifier = Modifier.widthIn(max = 96.dp))
+                            visibleTags.forEachIndexed { index, tag ->
+                                TagPill(tag, modifier = Modifier.weight(1f, fill = false))
+                                if (index < visibleTags.lastIndex) Spacer(Modifier.width(6.dp))
                             }
-                            if (link.tags.size > 2) {
+                            if (link.tags.size > visibleTags.size) {
+                                Spacer(Modifier.width(6.dp))
                                 Text(
-                                    text = "+${link.tags.size - 2}",
+                                    text = "+${link.tags.size - visibleTags.size}",
                                     style = MaterialTheme.typography.labelSmall,
                                     color = MaterialTheme.colorScheme.outline,
                                 )
                             }
                         }
+                    } else if (counters != null) {
+                        Spacer(Modifier.weight(1f))
                     }
                 }
             }
