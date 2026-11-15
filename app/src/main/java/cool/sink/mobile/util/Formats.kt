@@ -1,5 +1,6 @@
 package cool.sink.mobile.util
 
+import java.io.ByteArrayOutputStream
 import java.net.URI
 import java.time.Instant
 import java.time.ZoneId
@@ -38,3 +39,37 @@ fun endOfDayEpochSeconds(utcMillis: Long): Long =
         .plusDays(1)
         .atStartOfDay(ZoneId.systemDefault())
         .toEpochSecond() - 1
+
+
+/**
+ * Decodes percent-encoded UTF-8 sequences for display only. Unlike [java.net.URLDecoder]
+ * a literal plus sign is preserved, because '+' is meaningful in URLs.
+ */
+fun decodeUrlForDisplay(raw: String): String {
+    if (!raw.contains('%')) return raw
+    val result = StringBuilder(raw.length)
+    val pending = ByteArrayOutputStream()
+    fun flushPending() {
+        if (pending.size() > 0) {
+            result.append(pending.toByteArray().toString(Charsets.UTF_8))
+            pending.reset()
+        }
+    }
+    var index = 0
+    while (index < raw.length) {
+        val char = raw[index]
+        if (char == '%' && index + 2 < raw.length) {
+            val value = raw.substring(index + 1, index + 3).toIntOrNull(16)
+            if (value != null) {
+                pending.write(value)
+                index += 3
+                continue
+            }
+        }
+        flushPending()
+        result.append(char)
+        index++
+    }
+    flushPending()
+    return result.toString()
+}

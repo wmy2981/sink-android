@@ -106,6 +106,7 @@ import cool.sink.mobile.ui.shareText
 import cool.sink.mobile.ui.vm.LinksViewModel
 import cool.sink.mobile.ui.vm.SortOption
 import cool.sink.mobile.ui.vm.StatusFilter
+import cool.sink.mobile.util.decodeUrlForDisplay
 import cool.sink.mobile.util.formatDateTime
 import kotlinx.coroutines.launch
 
@@ -567,7 +568,7 @@ private fun LinkCard(
 
             Spacer(Modifier.height(4.dp))
             Text(
-                text = link.url,
+                text = decodeUrlForDisplay(link.url),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -646,7 +647,7 @@ private fun SearchResultRow(item: SearchItem, host: String, onClick: () -> Unit)
             )
             Spacer(Modifier.height(2.dp))
             Text(
-                text = item.url,
+                text = decodeUrlForDisplay(item.url),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 1,
@@ -713,7 +714,7 @@ private fun LinkDetailSheet(
             }
 
             Text(
-                text = link.url,
+                text = decodeUrlForDisplay(link.url),
                 style = MaterialTheme.typography.bodyLarge,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
