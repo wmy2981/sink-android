@@ -38,6 +38,8 @@ PROPS
 
 调试构建：`./gradlew assembleDebug`。
 
+单元测试：`./gradlew testDebugUnitTest`（覆盖 API 客户端、URL 规范化、标签与链接校验）。
+
 ## 使用的 Sink API
 
 | 接口 | 用途 |
