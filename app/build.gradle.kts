@@ -62,6 +62,13 @@ android {
         buildConfig = true
     }
 
+    testOptions {
+        unitTests.all {
+            it.maxHeapSize = "512m"
+            it.jvmArgs("-XX:ActiveProcessorCount=2", "-XX:+UseSerialGC")
+        }
+    }
+
     packaging {
         resources.excludes += setOf("/META-INF/{AL2.0,LGPL2.1}")
     }
