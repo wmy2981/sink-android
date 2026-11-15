@@ -39,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -47,7 +48,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cool.sink.mobile.R
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.ui.asString
 import cool.sink.mobile.ui.components.SinkLogo
 import cool.sink.mobile.ui.vm.ConnectViewModel
 
@@ -81,7 +84,7 @@ fun ConnectScreen(
             Text("Sink", style = MaterialTheme.typography.displaySmall)
             Spacer(Modifier.height(4.dp))
             Text(
-                text = "连接你的短链实例",
+                text = stringResource(R.string.connect_subtitle),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -91,7 +94,7 @@ fun ConnectScreen(
                 value = state.url,
                 onValueChange = viewModel::onUrlChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("实例地址") },
+                label = { Text(stringResource(R.string.connect_field_url)) },
                 placeholder = { Text("https://sink.example.com") },
                 leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
                 singleLine = true,
@@ -106,7 +109,7 @@ fun ConnectScreen(
                 value = state.token,
                 onValueChange = viewModel::onTokenChange,
                 modifier = Modifier.fillMaxWidth(),
-                label = { Text("访问令牌") },
+                label = { Text(stringResource(R.string.connect_field_token)) },
                 placeholder = { Text("NUXT_SITE_TOKEN") },
                 leadingIcon = { Icon(Icons.Outlined.Key, contentDescription = null) },
                 trailingIcon = {
@@ -117,7 +120,7 @@ fun ConnectScreen(
                             } else {
                                 Icons.Outlined.Visibility
                             },
-                            contentDescription = if (tokenVisible) "隐藏令牌" else "显示令牌",
+                            contentDescription = if (tokenVisible) stringResource(R.string.cd_hide_token) else stringResource(R.string.cd_show_token),
                         )
                     }
                 },
@@ -135,7 +138,7 @@ fun ConnectScreen(
             )
             Spacer(Modifier.height(10.dp))
             Text(
-                text = "令牌即实例环境变量 NUXT_SITE_TOKEN 的值，仅保存在本机。",
+                text = stringResource(R.string.connect_token_hint),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.fillMaxWidth(),
@@ -150,7 +153,7 @@ fun ConnectScreen(
                     contentColor = MaterialTheme.colorScheme.onErrorContainer,
                 ) {
                     Text(
-                        text = state.error.orEmpty(),
+                        text = state.error?.asString().orEmpty(),
                         modifier = Modifier.padding(14.dp),
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -172,7 +175,7 @@ fun ConnectScreen(
                         color = MaterialTheme.colorScheme.onPrimary,
                     )
                 } else {
-                    Text("连接实例", style = MaterialTheme.typography.titleMedium)
+                    Text(stringResource(R.string.connect_button), style = MaterialTheme.typography.titleMedium)
                 }
             }
             Spacer(Modifier.height(8.dp))
@@ -189,11 +192,11 @@ fun ConnectScreen(
                         }
                     },
                 ) {
-                    Text("了解 Sink")
+                    Text(stringResource(R.string.connect_learn_more))
                 }
             }
             Text(
-                text = "支持 Sink 自建实例，需要开放 REST API 访问。",
+                text = stringResource(R.string.connect_footer),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center,

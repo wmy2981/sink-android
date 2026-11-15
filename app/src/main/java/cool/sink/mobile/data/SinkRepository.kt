@@ -1,12 +1,14 @@
 package cool.sink.mobile.data
 
+import cool.sink.mobile.R
+import cool.sink.mobile.util.UiText
 import cool.sink.mobile.util.decodeUrlForDisplay
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.serialization.SerializationException
 import retrofit2.HttpException
 
-class SinkException(message: String, val code: Int? = null) : Exception(message)
+class SinkException(val text: UiText, val code: Int? = null) : Exception()
 
 /** Single entry point for every Sink API call used by the app. */
 class SinkRepository(
@@ -87,7 +89,7 @@ class SinkRepository(
 
     private suspend fun api(): SinkApi {
         val settings = settingsStore.current()
-        if (!settings.isConnected) throw SinkException("尚未连接 Sink 实例")
+        if (!settings.isConnected) throw SinkException(UiText(R.string.error_not_connected))
         return apiFactory.create(settings.baseUrl, settings.token)
     }
 
@@ -98,20 +100,20 @@ class SinkRepository(
     } catch (error: HttpException) {
         throw SinkException(messageFor(error.code()), error.code())
     } catch (_: SerializationException) {
-        throw SinkException("实例返回了无法识别的数据，请确认地址指向 Sink 实例")
+        throw SinkException(UiText(R.string.error_unrecognized_data))
     } catch (_: IOException) {
-        throw SinkException("网络请求失败，请检查实例地址和网络连接")
+        throw SinkException(UiText(R.string.error_network))
     }
 
-    private fun messageFor(code: Int): String = when (code) {
-        400 -> "请求参数不合法"
-        401 -> "令牌无效或已过期，请到设置中重新连接"
-        403 -> "实例拒绝了本次访问"
-        404 -> "目标不存在，可能已被删除"
-        409 -> "链接刚刚被修改，请刷新后重试"
-        423 -> "实例存储尚未就绪，请先在网页端打开「链接」页面"
-        429 -> "请求过于频繁，请稍后再试"
-        in 500..599 -> "实例暂时不可用（HTTP $code）"
-        else -> "请求失败（HTTP $code）"
+    private fun messageFor(code: Int): UiText = when (code) {
+        400 -> UiText(R.string.error_bad_request)
+        401 -> UiText(R.string.error_unauthorized)
+        403 -> UiText(R.string.error_forbidden)
+        404 -> UiText(R.string.error_not_found)
+        409 -> UiText(R.string.error_conflict)
+        423 -> UiText(R.string.error_storage_not_ready)
+        429 -> UiText(R.string.error_rate_limited)
+        in 500..599 -> UiText(R.string.error_server, listOf(code))
+        else -> UiText(R.string.error_http, listOf(code))
     }
 }

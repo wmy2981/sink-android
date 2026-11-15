@@ -2,31 +2,34 @@
 
 ![Android CI](https://github.com/wmy2981/sink-android/actions/workflows/android.yml/badge.svg)
 
-[Sink](https://github.com/ccbikai/Sink) 短链服务的第三方原生 Android 客户端。使用 Kotlin + Jetpack Compose 构建，界面遵循 Material Design 3，通过 Sink 的 REST API 连接任意自建实例。
+A third-party native Android client for [Sink](https://github.com/ccbikai/Sink), the Cloudflare Workers short-link service. Built with Kotlin and Jetpack Compose, it follows Material Design 3 and connects to any self-hosted Sink instance through the Sink REST API.
 
-## 功能
+**English** | [简体中文](README.zh-CN.md)
 
-- 连接实例：填写实例地址与 `NUXT_SITE_TOKEN`，连接前调用 `/api/verify` 校验。
-- 短链列表：游标分页、下拉刷新、无限加载，支持按短码/链接/备注搜索，按时间或短码排序，按状态（有效/已过期/全部）和标签筛选。
-- 新建 / 编辑 / 删除短链：支持目标地址、自定义短码、备注、过期时间与最多 10 个标签。
-- 快捷操作：复制短链、在浏览器打开、系统分享、生成二维码。
-- 外观：跟随系统/浅色/深色主题，Android 12+ 可选用系统动态取色。
-- 凭据只保存在本机 DataStore 的私有存储中，不会上传到第三方。
+## Features
 
-## 技术栈
+- **Connect an instance** — enter the instance URL and `NUXT_SITE_TOKEN`; the app validates them with `/api/verify` before saving.
+- **Link list** — cursor pagination, pull to refresh, and infinite scrolling; search by slug, URL, or note; sort by date or slug; filter by status (active, expired, all) and tags.
+- **Create, edit, delete** — target URL, custom slug, note, expiration date, and up to 10 tags.
+- **Quick actions** — copy the short link, open it in a browser, share it with other apps, or show a QR code.
+- **Appearance** — follow the system theme, or force light or dark; Android 12+ can use the system wallpaper palette.
+- **Localized UI** — English and Simplified Chinese, following the system language.
+- **Private by default** — credentials stay in the app's private DataStore and are never uploaded anywhere else.
 
-- Kotlin 2.0 + Jetpack Compose（Material 3，BOM 2024.12）
-- MVVM：`ViewModel` + `StateFlow` + 手写 `AppContainer`
+## Tech stack
+
+- Kotlin 2.0 + Jetpack Compose (Material 3, BOM 2024.12)
+- MVVM: `ViewModel` + `StateFlow` + a small hand-written `AppContainer`
 - Retrofit + OkHttp + kotlinx.serialization
-- DataStore Preferences（实例地址、令牌、主题）
-- ZXing core（二维码生成）
+- DataStore Preferences (instance URL, token, theme)
+- ZXing core (QR codes)
 
-## 构建
+## Build
 
-环境要求：JDK 17、Android SDK Platform 35、Build-Tools 35.0.0。
+Requirements: JDK 17, Android SDK Platform 35, Build-Tools 35.0.0.
 
 ```bash
-# 可选：创建签名配置（未提供时 release 使用 debug 签名）
+# Optional: create a signing config (release falls back to debug signing when absent)
 cat > keystore.properties <<PROPS
 storeFile=keystore/sink-release.jks
 storePassword=******
@@ -35,51 +38,55 @@ keyPassword=******
 PROPS
 
 ./gradlew assembleRelease
-# 产物：app/build/outputs/apk/release/app-release.apk
+# Output: app/build/outputs/apk/release/app-release.apk
 ```
 
-调试构建：`./gradlew assembleDebug`。
+Debug build: `./gradlew assembleDebug`.
 
-单元测试：`./gradlew testDebugUnitTest`（覆盖 API 客户端、URL 规范化、标签与链接校验）。
+Unit tests: `./gradlew testDebugUnitTest` (API client, URL normalization, tags, link validation).
 
-## CI 与 APK 产物
+## Localization
 
-GitHub Actions 工作流 `.github/workflows/android.yml` 在 push、PR、tag 与手动触发时执行：
+The app ships with English (default) and Simplified Chinese. It follows the system language; on Android 13 and later you can also pick a language just for Sink in **Settings → Apps → Sink → App language**. Interface strings live in `app/src/main/res/values/strings.xml` and `app/src/main/res/values-zh-rCN/strings.xml`. To add a language, create `app/src/main/res/values-<qualifier>/strings.xml` and add the locale to `app/src/main/res/xml/locales_config.xml`.
 
-1. 运行单元测试；
-2. 构建 debug 与 release APK；
-3. 将两个 APK 上传为构建产物 `sink-android-<run_number>`，在 Actions 运行页面底部 Artifacts 下载。
+## CI and APK artifacts
 
-Release 签名通过仓库 Secrets 注入：`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。未配置 Secret 时（例如来自 fork 的 PR）自动回退为 debug 签名。
+The GitHub Actions workflow in `.github/workflows/android.yml` runs on pushes, pull requests, tags, and manual dispatches. It:
 
-## 使用的 Sink API
+1. runs the unit tests;
+2. builds debug and release APKs;
+3. uploads both APKs as the `sink-android-<run_number>` artifact, available under **Artifacts** on the run page.
 
-| 接口 | 用途 |
+Release signing is injected through repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`. Without those secrets (for example on pull requests from forks) the release build falls back to debug signing.
+
+## Sink API used
+
+| Endpoint | Purpose |
 | --- | --- |
-| `GET /api/verify` | 校验令牌并读取当前身份 |
-| `GET /api/link/list` | 分页列出短链（sort/status/tag/cursor） |
-| `GET /api/link/search` | 关键词搜索 |
-| `GET /api/link/tags` | 标签及计数 |
-| `GET /api/link/query` | 读取单条短链（编辑前加载） |
-| `POST /api/link/create` | 新建短链 |
-| `PUT /api/link/edit` | 编辑短链（保留网页端配置的高级字段） |
-| `POST /api/link/delete` | 删除短链 |
+| `GET /api/verify` | Validate the token and read the current identity |
+| `GET /api/link/list` | List links with pagination (sort/status/tag/cursor) |
+| `GET /api/link/search` | Keyword search |
+| `GET /api/link/tags` | Tags and their counts |
+| `GET /api/link/query` | Read one link before editing |
+| `POST /api/link/create` | Create a link |
+| `PUT /api/link/edit` | Edit a link (preserving advanced fields set on the web) |
+| `POST /api/link/delete` | Delete a link |
 
-认证方式为请求头 `Authorization: Bearer <NUXT_SITE_TOKEN>`。
+Authentication uses the `Authorization: Bearer <NUXT_SITE_TOKEN>` header.
 
-## 已知限制
+## Known limitations
 
-- 仅支持站点令牌认证，暂不支持 Cloudflare Access 的交互式浏览器登录。
-- 密码保护、地理分流、URL 伪装、反向代理等高级选项暂未在客户端开放；编辑短链时会保留网页端已设置的值。
-- 需要设备可直接访问实例地址；自建实例若只在内网，请确保手机处于同一网络。
+- Site-token authentication only; interactive Cloudflare Access browser login is not supported.
+- Password protection, geo-routing, URL cloaking, reverse proxying, and other advanced options are not exposed in the app. Values configured on the web are preserved when editing a link.
+- The device must be able to reach the instance directly. For LAN-only instances, keep the phone on the same network.
 
-## 目录结构
+## Project structure
 
 ```
 app/src/main/java/cool/sink/mobile
-├── data/          # 模型、Retrofit API、DataStore、Repository
-├── ui/            # Compose 主题、组件、页面、ViewModel
-├── util/          # 格式化、URL 校验、二维码
+├── data/          # Models, Retrofit API, DataStore, repository
+├── ui/            # Compose theme, components, screens, view models
+├── util/          # Formatting, URL validation, QR codes
 ├── MainActivity.kt
 └── SinkApplication.kt
 ```

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sink</string>
+
+    <!-- 通用操作 -->
+    <string name="action_cancel">取消</string>
+    <string name="action_close">关闭</string>
+    <string name="action_confirm">确定</string>
+    <string name="action_save">保存</string>
+    <string name="action_delete">删除</string>
+    <string name="action_edit">编辑</string>
+    <string name="action_share">分享</string>
+    <string name="action_copy">复制</string>
+    <string name="action_open">打开</string>
+    <string name="action_retry">重试</string>
+    <string name="action_back">返回</string>
+    <string name="action_new">新建</string>
+    <string name="action_new_link">新建短链</string>
+    <string name="share_short_link">分享短链</string>
+    <string name="clip_label_short_link">短链</string>
+    <string name="qr_code_title">二维码</string>
+    <string name="qr_code_failed">二维码生成失败</string>
+    <string name="cd_short_link_qr">短链二维码</string>
+
+    <!-- 连接 -->
+    <string name="connect_subtitle">连接你的短链实例</string>
+    <string name="connect_field_url">实例地址</string>
+    <string name="connect_field_token">访问令牌</string>
+    <string name="connect_token_hint">令牌即实例环境变量 NUXT_SITE_TOKEN 的值，仅保存在本机。</string>
+    <string name="connect_button">连接实例</string>
+    <string name="connect_learn_more">了解 Sink</string>
+    <string name="connect_footer">支持 Sink 自建实例，需要开放 REST API 访问。</string>
+    <string name="cd_hide_token">隐藏令牌</string>
+    <string name="cd_show_token">显示令牌</string>
+    <string name="error_invalid_instance_url">请填写合法的实例地址，例如 https://sink.example.com</string>
+    <string name="error_token_required">请填写实例的访问令牌</string>
+
+    <!-- 短链列表 -->
+    <string name="links_title">短链</string>
+    <string name="cd_settings">设置</string>
+    <string name="search_placeholder">搜索短码、链接、备注</string>
+    <string name="cd_clear_search">清除搜索</string>
+    <string name="filter_all_tags">全部标签</string>
+    <string name="filter_tag">标签</string>
+    <string name="sort_newest">最新优先</string>
+    <string name="sort_oldest">最早优先</string>
+    <string name="sort_az">短码 A→Z</string>
+    <string name="sort_za">短码 Z→A</string>
+    <string name="status_active">有效</string>
+    <string name="status_expired">已过期</string>
+    <string name="status_all">全部</string>
+    <string name="state_load_failed">加载失败</string>
+    <string name="state_no_results">没有匹配的短链</string>
+    <string name="state_no_results_hint">换一个关键词试试</string>
+    <string name="state_no_links">还没有短链</string>
+    <string name="state_no_links_hint">创建第一条短链，随时在这里管理。</string>
+    <string name="snackbar_copied">已复制短链</string>
+    <string name="snackbar_no_browser">没有可用的浏览器</string>
+    <string name="dialog_delete_title">删除短链</string>
+    <string name="dialog_delete_message">确定删除「%1$s」吗？此操作不可撤销。</string>
+    <string name="cd_more_actions">更多操作</string>
+    <string name="menu_copy_link">复制短链</string>
+    <string name="menu_open_browser">在浏览器打开</string>
+    <string name="expires_at">有效期至 %1$s</string>
+    <string name="info_created">创建时间</string>
+    <string name="info_updated">最近更新</string>
+    <string name="info_expires">过期时间</string>
+
+    <!-- 编辑 -->
+    <string name="edit_title">编辑短链</string>
+    <string name="create_title">新建短链</string>
+    <string name="edit_loading_title">正在加载</string>
+    <string name="edit_loading_subtitle">正在从实例读取短链信息…</string>
+    <string name="edit_open_failed">无法打开短链</string>
+    <string name="field_url">目标地址</string>
+    <string name="field_url_hint">短链会跳转到这个地址</string>
+    <string name="field_slug">短码</string>
+    <string name="slug_locked">短码创建后不可修改</string>
+    <string name="slug_hint">留空则由实例自动生成；仅支持小写字母、数字和连字符</string>
+    <string name="field_expiration">过期时间</string>
+    <string name="expiration_none">永久有效</string>
+    <string name="cd_clear_expiration">清除过期时间</string>
+    <string name="field_comment">备注（可选）</string>
+    <string name="section_tags">标签</string>
+    <string name="field_add_tag">添加标签</string>
+    <string name="tag_limit_hint">最多 10 个标签，每个 32 字符以内</string>
+    <string name="section_known_tags">已有标签</string>
+    <string name="advanced_note">密码保护、地理分流、URL 伪装等高级选项暂未开放，编辑时会保留网页端已配置的值。</string>
+    <string name="error_url_invalid">请输入以 http:// 或 https:// 开头的完整链接</string>
+    <string name="error_slug_invalid">短码只能包含字母、数字和连字符，且不能占用 dashboard</string>
+
+    <!-- 设置 -->
+    <string name="settings_title">设置</string>
+    <string name="settings_not_connected">未连接</string>
+    <string name="settings_not_verified">尚未验证身份</string>
+    <string name="action_reverify">重新验证</string>
+    <string name="action_disconnect">断开连接</string>
+    <string name="section_appearance">外观</string>
+    <string name="label_theme_mode">主题模式</string>
+    <string name="theme_system">跟随系统</string>
+    <string name="theme_light">浅色</string>
+    <string name="theme_dark">深色</string>
+    <string name="label_dynamic_color">动态取色</string>
+    <string name="dynamic_color_hint">使用系统壁纸调色板（Android 12+）</string>
+    <string name="dynamic_color_unsupported">当前系统版本不支持动态取色</string>
+    <string name="section_about">关于</string>
+    <string name="label_version">版本</string>
+    <string name="link_sink_project">Sink 开源项目</string>
+    <string name="link_sink_docs">Sink 使用文档</string>
+    <string name="about_blurb">Sink for Android 是第三方客户端，通过 Sink REST API 管理自建实例的短链。</string>
+    <string name="credentials_note">凭据仅保存在本机应用私有存储中。</string>
+    <string name="dialog_disconnect_title">断开连接</string>
+    <string name="dialog_disconnect_message">将清除本机保存的实例地址和访问令牌，短链数据仍保留在服务器上。</string>
+    <string name="snackbar_verified">验证通过，当前身份：%1$s</string>
+    <string name="auth_site_token">站点令牌认证</string>
+    <string name="auth_access_user">Cloudflare Access（用户）</string>
+    <string name="auth_access_service">Cloudflare Access（服务）</string>
+    <string name="auth_unverified">未验证</string>
+
+    <!-- 错误 -->
+    <string name="error_not_connected">尚未连接 Sink 实例</string>
+    <string name="error_unrecognized_data">实例返回了无法识别的数据，请确认地址指向 Sink 实例</string>
+    <string name="error_network">网络请求失败，请检查实例地址和网络连接</string>
+    <string name="error_bad_request">请求参数不合法</string>
+    <string name="error_unauthorized">令牌无效或已过期，请到设置中重新连接</string>
+    <string name="error_forbidden">实例拒绝了本次访问</string>
+    <string name="error_not_found">目标不存在，可能已被删除</string>
+    <string name="error_conflict">链接刚刚被修改，请刷新后重试</string>
+    <string name="error_storage_not_ready">实例存储尚未就绪，请先在网页端打开「链接」页面</string>
+    <string name="error_rate_limited">请求过于频繁，请稍后再试</string>
+    <string name="error_server">实例暂时不可用（HTTP %1$d）</string>
+    <string name="error_http">请求失败（HTTP %1$d）</string>
+    <string name="snackbar_deleted">已删除 %1$s</string>
+</resources>

@@ -82,6 +82,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -91,9 +92,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cool.sink.mobile.R
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.SearchItem
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.ui.asString
 import cool.sink.mobile.ui.buildShortUrl
 import cool.sink.mobile.ui.components.ConfirmDialog
 import cool.sink.mobile.ui.components.EmptyState
@@ -132,7 +135,7 @@ fun LinksScreen(
     var qrUrl by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
-        viewModel.messages.collect { message -> snackbarHostState.showSnackbar(message) }
+        viewModel.messages.collect { message -> snackbarHostState.showSnackbar(message.resolve(context)) }
     }
     LaunchedEffect(refreshSignal) {
         if (refreshSignal) {
@@ -142,17 +145,17 @@ fun LinksScreen(
     }
 
     fun copyLink(link: Link) {
-        copyToClipboard(context, "短链", buildShortUrl(state.baseUrl, link.slug))
-        scope.launch { snackbarHostState.showSnackbar("已复制短链") }
+        copyToClipboard(context, context.getString(R.string.clip_label_short_link), buildShortUrl(state.baseUrl, link.slug))
+        scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.snackbar_copied)) }
     }
 
     Scaffold(
         topBar = {
             LargeTopAppBar(
-                title = { Text("短链") },
+                title = { Text(stringResource(R.string.links_title)) },
                 actions = {
                     IconButton(onClick = onSettings) {
-                        Icon(Icons.Outlined.Settings, contentDescription = "设置")
+                        Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.cd_settings))
                     }
                 },
                 scrollBehavior = scrollBehavior,
@@ -162,7 +165,7 @@ fun LinksScreen(
             ExtendedFloatingActionButton(
                 onClick = onCreate,
                 icon = { Icon(Icons.Outlined.Add, contentDescription = null) },
-                text = { Text("新建") },
+                text = { Text(stringResource(R.string.action_new)) },
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -178,12 +181,12 @@ fun LinksScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 4.dp),
-                placeholder = { Text("搜索短码、链接、备注") },
+                placeholder = { Text(stringResource(R.string.search_placeholder)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 trailingIcon = {
                     if (state.query.isNotEmpty()) {
                         IconButton(onClick = { viewModel.onQueryChange("") }) {
-                            Icon(Icons.Outlined.Close, contentDescription = "清除搜索")
+                            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.cd_clear_search))
                         }
                     }
                 },
@@ -202,24 +205,24 @@ fun LinksScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 ChipDropdown(
-                    label = state.sort.label,
+                    label = stringResource(state.sort.labelRes),
                     icon = Icons.AutoMirrored.Outlined.Sort,
-                    options = SortOption.entries.map { it to it.label },
+                    options = SortOption.entries.map { it to stringResource(it.labelRes) },
                     selectedOption = state.sort,
                     onSelect = viewModel::onSortChange,
                 )
                 ChipDropdown(
-                    label = state.status.label,
+                    label = stringResource(state.status.labelRes),
                     icon = Icons.Outlined.FilterList,
-                    options = StatusFilter.entries.map { it to it.label },
+                    options = StatusFilter.entries.map { it to stringResource(it.labelRes) },
                     selectedOption = state.status,
                     onSelect = viewModel::onStatusChange,
                 )
                 if (state.tags.isNotEmpty()) {
-                    val tagOptions = listOf<Pair<String?, String>>(null to "全部标签") +
+                    val tagOptions = listOf<Pair<String?, String>>(null to stringResource(R.string.filter_all_tags)) +
                         state.tags.map { it.name to "${it.name} · ${it.count}" }
                     ChipDropdown(
-                        label = state.selectedTag ?: "标签",
+                        label = state.selectedTag ?: stringResource(R.string.filter_tag),
                         icon = Icons.AutoMirrored.Outlined.Label,
                         options = tagOptions,
                         selectedOption = state.selectedTag,
@@ -240,9 +243,9 @@ fun LinksScreen(
 
                     state.error != null && state.links.isEmpty() && state.searchResults == null -> EmptyState(
                         icon = Icons.Outlined.CloudOff,
-                        title = "加载失败",
-                        subtitle = state.error.orEmpty(),
-                        actionLabel = "重试",
+                        title = stringResource(R.string.state_load_failed),
+                        subtitle = state.error?.asString().orEmpty(),
+                        actionLabel = stringResource(R.string.action_retry),
                         onAction = { viewModel.refresh() },
                     )
 
@@ -251,8 +254,8 @@ fun LinksScreen(
                         if (results.isEmpty() && !state.searching) {
                             EmptyState(
                                 icon = Icons.Outlined.Search,
-                                title = "没有匹配的短链",
-                                subtitle = "换一个关键词试试",
+                                title = stringResource(R.string.state_no_results),
+                                subtitle = stringResource(R.string.state_no_results_hint),
                             )
                         } else {
                             LazyColumn(
@@ -280,9 +283,9 @@ fun LinksScreen(
 
                     state.links.isEmpty() -> EmptyState(
                         icon = Icons.Outlined.LinkOff,
-                        title = "还没有短链",
-                        subtitle = "创建第一条短链，随时在这里管理。",
-                        actionLabel = "新建短链",
+                        title = stringResource(R.string.state_no_links),
+                        subtitle = stringResource(R.string.state_no_links_hint),
+                        actionLabel = stringResource(R.string.action_new_link),
                         onAction = onCreate,
                     )
 
@@ -314,7 +317,7 @@ fun LinksScreen(
                                     },
                                     onBrowser = {
                                         if (!openUrl(context, buildShortUrl(state.baseUrl, link.slug))) {
-                                            scope.launch { snackbarHostState.showSnackbar("没有可用的浏览器") }
+                                            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.snackbar_no_browser)) }
                                         }
                                     },
                                     onEdit = { onEdit(link.slug) },
@@ -352,7 +355,7 @@ fun LinksScreen(
             shortUrl = shortUrl,
             onDismiss = { selectedLink = null },
             onCopy = { copyLink(link) },
-            onOpen = { if (!openUrl(context, shortUrl)) scope.launch { snackbarHostState.showSnackbar("没有可用的浏览器") } },
+            onOpen = { if (!openUrl(context, shortUrl)) scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.snackbar_no_browser)) } },
             onShare = { shareText(context, shortUrl) },
             onQrCode = { qrUrl = shortUrl },
             onEdit = {
@@ -368,8 +371,8 @@ fun LinksScreen(
 
     pendingDelete?.let { link ->
         ConfirmDialog(
-            title = "删除短链",
-            message = "确定删除「${link.slug}」吗？此操作不可撤销。",
+            title = stringResource(R.string.dialog_delete_title),
+            message = stringResource(R.string.dialog_delete_message, link.slug),
             onConfirm = {
                 viewModel.delete(link)
                 pendingDelete = null
@@ -509,7 +512,7 @@ private fun LinkCard(
                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                     ) {
                         Text(
-                            text = "已过期",
+                            text = stringResource(R.string.status_expired),
                             modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
                             style = MaterialTheme.typography.labelSmall,
                         )
@@ -517,11 +520,11 @@ private fun LinkCard(
                 }
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {
-                        Icon(Icons.Outlined.MoreVert, contentDescription = "更多操作")
+                        Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.cd_more_actions))
                     }
                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
                         DropdownMenuItem(
-                            text = { Text("复制短链") },
+                            text = { Text(stringResource(R.string.menu_copy_link)) },
                             leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
                             onClick = {
                                 menuExpanded = false
@@ -529,7 +532,7 @@ private fun LinkCard(
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text("在浏览器打开") },
+                            text = { Text(stringResource(R.string.menu_open_browser)) },
                             leadingIcon = { Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null) },
                             onClick = {
                                 menuExpanded = false
@@ -537,7 +540,7 @@ private fun LinkCard(
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text("分享") },
+                            text = { Text(stringResource(R.string.action_share)) },
                             leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
                             onClick = {
                                 menuExpanded = false
@@ -545,7 +548,7 @@ private fun LinkCard(
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text("编辑") },
+                            text = { Text(stringResource(R.string.action_edit)) },
                             leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
                             onClick = {
                                 menuExpanded = false
@@ -553,7 +556,7 @@ private fun LinkCard(
                             },
                         )
                         DropdownMenuItem(
-                            text = { Text("删除", color = MaterialTheme.colorScheme.error) },
+                            text = { Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error) },
                             leadingIcon = {
                                 Icon(
                                     Icons.Outlined.Delete,
@@ -622,7 +625,7 @@ private fun LinkCard(
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = "有效期至 ${formatDateTime(link.expiration)}",
+                        text = stringResource(R.string.expires_at, formatDateTime(link.expiration) ?: "-"),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.outline,
                     )
@@ -709,7 +712,7 @@ private fun LinkDetailSheet(
                         contentColor = MaterialTheme.colorScheme.onErrorContainer,
                     ) {
                         Text(
-                            text = "已过期",
+                            text = stringResource(R.string.status_expired),
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                             style = MaterialTheme.typography.labelMedium,
                         )
@@ -742,10 +745,10 @@ private fun LinkDetailSheet(
             }
 
             HorizontalDivider(Modifier.padding(vertical = 4.dp))
-            InfoRow("创建时间", formatDateTime(link.createdAt) ?: "-")
-            InfoRow("最近更新", formatDateTime(link.updatedAt) ?: "-")
+            InfoRow(stringResource(R.string.info_created), formatDateTime(link.createdAt) ?: "-")
+            InfoRow(stringResource(R.string.info_updated), formatDateTime(link.updatedAt) ?: "-")
             if (link.expiration != null) {
-                InfoRow("过期时间", formatDateTime(link.expiration) ?: "-")
+                InfoRow(stringResource(R.string.info_expires), formatDateTime(link.expiration) ?: "-")
             }
 
             Spacer(Modifier.height(4.dp))
@@ -757,7 +760,7 @@ private fun LinkDetailSheet(
                 ) {
                     Icon(Icons.Outlined.ContentCopy, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("复制")
+                    Text(stringResource(R.string.action_copy))
                 }
                 OutlinedButton(
                     onClick = onQrCode,
@@ -766,7 +769,7 @@ private fun LinkDetailSheet(
                 ) {
                     Icon(Icons.Outlined.QrCode2, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("二维码")
+                    Text(stringResource(R.string.qr_code_title))
                 }
                 OutlinedButton(
                     onClick = onShare,
@@ -775,22 +778,22 @@ private fun LinkDetailSheet(
                 ) {
                     Icon(Icons.Outlined.Share, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("分享")
+                    Text(stringResource(R.string.action_share))
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = onOpen, modifier = Modifier.weight(1f)) {
                     Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("打开")
+                    Text(stringResource(R.string.action_open))
                 }
                 OutlinedButton(onClick = onEdit, modifier = Modifier.weight(1f)) {
                     Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("编辑")
+                    Text(stringResource(R.string.action_edit))
                 }
                 TextButton(onClick = onDelete, modifier = Modifier.weight(1f)) {
-                    Text("删除", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.action_delete), color = MaterialTheme.colorScheme.error)
                 }
             }
             Text(

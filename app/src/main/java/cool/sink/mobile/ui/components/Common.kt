@@ -29,9 +29,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import cool.sink.mobile.R
 import cool.sink.mobile.util.generateQrCode
 
 @Composable
@@ -138,7 +140,7 @@ fun InfoRow(label: String, value: String) {
 fun ConfirmDialog(
     title: String,
     message: String,
-    confirmLabel: String = "删除",
+    confirmLabel: String = stringResource(R.string.action_delete),
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -152,7 +154,7 @@ fun ConfirmDialog(
             }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_cancel)) }
         },
     )
 }
@@ -162,7 +164,7 @@ fun QrCodeDialog(text: String, onDismiss: () -> Unit) {
     val bitmap = remember(text) { runCatching { generateQrCode(text) }.getOrNull() }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("二维码") },
+        title = { Text(stringResource(R.string.qr_code_title)) },
         text = {
             Column(
                 modifier = Modifier.fillMaxWidth(),
@@ -176,14 +178,14 @@ fun QrCodeDialog(text: String, onDismiss: () -> Unit) {
                     ) {
                         Image(
                             bitmap = bitmap.asImageBitmap(),
-                            contentDescription = "短链二维码",
+                            contentDescription = stringResource(R.string.cd_short_link_qr),
                             modifier = Modifier
                                 .size(220.dp)
                                 .padding(10.dp),
                         )
                     }
                 } else {
-                    Text("二维码生成失败", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.qr_code_failed), color = MaterialTheme.colorScheme.error)
                 }
                 Spacer(Modifier.height(12.dp))
                 Text(
@@ -195,7 +197,7 @@ fun QrCodeDialog(text: String, onDismiss: () -> Unit) {
             }
         },
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("关闭") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.action_close)) }
         },
     )
 }

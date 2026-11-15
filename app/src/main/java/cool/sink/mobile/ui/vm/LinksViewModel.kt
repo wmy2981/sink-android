@@ -1,16 +1,19 @@
 package cool.sink.mobile.ui.vm
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import cool.sink.mobile.R
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.SearchItem
 import cool.sink.mobile.data.SinkApiFactory
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.data.TagCount
+import cool.sink.mobile.util.UiText
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
@@ -21,17 +24,17 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
-enum class SortOption(val apiValue: String, val label: String) {
-    NEWEST("newest", "最新优先"),
-    OLDEST("oldest", "最早优先"),
-    AZ("az", "短码 A→Z"),
-    ZA("za", "短码 Z→A"),
+enum class SortOption(val apiValue: String, @StringRes val labelRes: Int) {
+    NEWEST("newest", R.string.sort_newest),
+    OLDEST("oldest", R.string.sort_oldest),
+    AZ("az", R.string.sort_az),
+    ZA("za", R.string.sort_za),
 }
 
-enum class StatusFilter(val apiValue: String, val label: String) {
-    ACTIVE("active", "有效"),
-    EXPIRED("expired", "已过期"),
-    ALL("all", "全部"),
+enum class StatusFilter(val apiValue: String, @StringRes val labelRes: Int) {
+    ACTIVE("active", R.string.status_active),
+    EXPIRED("expired", R.string.status_expired),
+    ALL("all", R.string.status_all),
 }
 
 class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
@@ -50,7 +53,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         val tags: List<TagCount> = emptyList(),
         val listComplete: Boolean = true,
         val cursor: String? = null,
-        val error: String? = null,
+        val error: UiText? = null,
         val baseUrl: String = "",
         val host: String = "",
     )
@@ -58,7 +61,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
     private val _state = MutableStateFlow(UiState())
     val state: StateFlow<UiState> = _state.asStateFlow()
 
-    private val _messages = Channel<String>(Channel.BUFFERED)
+    private val _messages = Channel<UiText>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()
 
     private var searchJob: Job? = null
@@ -110,7 +113,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                 }
             } catch (error: SinkException) {
                 _state.update {
-                    it.copy(loading = false, refreshing = false, error = error.message)
+                    it.copy(loading = false, refreshing = false, error = error.text)
                 }
             }
         }
@@ -139,7 +142,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                 }
             } catch (error: SinkException) {
                 _state.update { it.copy(loadingMore = false) }
-                _messages.send(error.message ?: "加载失败")
+                _messages.send(error.text)
             }
         }
     }
@@ -183,9 +186,9 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                         searchResults = state.searchResults?.filterNot { it.slug == link.slug },
                     )
                 }
-                _messages.send("已删除 ${link.slug}")
+                _messages.send(UiText(R.string.snackbar_deleted, listOf(link.slug)))
             } catch (error: SinkException) {
-                _messages.send(error.message ?: "删除失败")
+                _messages.send(error.text)
             }
         }
     }
@@ -198,7 +201,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                 _state.update { it.copy(searching = false, searchResults = results) }
             }
         } catch (error: SinkException) {
-            _state.update { it.copy(searching = false, error = error.message) }
+            _state.update { it.copy(searching = false, error = error.text) }
         }
     }
 

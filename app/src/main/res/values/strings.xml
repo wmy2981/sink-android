@@ -1,4 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Sink</string>
+
+    <!-- Common actions -->
+    <string name="action_cancel">Cancel</string>
+    <string name="action_close">Close</string>
+    <string name="action_confirm">OK</string>
+    <string name="action_save">Save</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_share">Share</string>
+    <string name="action_copy">Copy</string>
+    <string name="action_open">Open</string>
+    <string name="action_retry">Retry</string>
+    <string name="action_back">Back</string>
+    <string name="action_new">New</string>
+    <string name="action_new_link">New link</string>
+    <string name="share_short_link">Share short link</string>
+    <string name="clip_label_short_link">Short link</string>
+    <string name="qr_code_title">QR code</string>
+    <string name="qr_code_failed">Couldn’t generate the QR code</string>
+    <string name="cd_short_link_qr">Short link QR code</string>
+
+    <!-- Connect -->
+    <string name="connect_subtitle">Connect to your short link instance</string>
+    <string name="connect_field_url">Instance URL</string>
+    <string name="connect_field_token">Access token</string>
+    <string name="connect_token_hint">The token is the value of the instance’s NUXT_SITE_TOKEN environment variable. It is stored only on this device.</string>
+    <string name="connect_button">Connect</string>
+    <string name="connect_learn_more">About Sink</string>
+    <string name="connect_footer">Works with self-hosted Sink instances that expose the REST API.</string>
+    <string name="cd_hide_token">Hide token</string>
+    <string name="cd_show_token">Show token</string>
+    <string name="error_invalid_instance_url">Enter a valid instance URL, for example https://sink.example.com</string>
+    <string name="error_token_required">Enter the instance access token</string>
+
+    <!-- Links -->
+    <string name="links_title">Short links</string>
+    <string name="cd_settings">Settings</string>
+    <string name="search_placeholder">Search slug, URL, or note</string>
+    <string name="cd_clear_search">Clear search</string>
+    <string name="filter_all_tags">All tags</string>
+    <string name="filter_tag">Tag</string>
+    <string name="sort_newest">Newest first</string>
+    <string name="sort_oldest">Oldest first</string>
+    <string name="sort_az">Slug A→Z</string>
+    <string name="sort_za">Slug Z→A</string>
+    <string name="status_active">Active</string>
+    <string name="status_expired">Expired</string>
+    <string name="status_all">All</string>
+    <string name="state_load_failed">Couldn’t load</string>
+    <string name="state_no_results">No matching links</string>
+    <string name="state_no_results_hint">Try a different keyword.</string>
+    <string name="state_no_links">No links yet</string>
+    <string name="state_no_links_hint">Create your first short link and manage it here.</string>
+    <string name="snackbar_copied">Short link copied</string>
+    <string name="snackbar_no_browser">No browser available</string>
+    <string name="dialog_delete_title">Delete link</string>
+    <string name="dialog_delete_message">Delete “%1$s”? This can’t be undone.</string>
+    <string name="cd_more_actions">More actions</string>
+    <string name="menu_copy_link">Copy short link</string>
+    <string name="menu_open_browser">Open in browser</string>
+    <string name="expires_at">Expires %1$s</string>
+    <string name="info_created">Created</string>
+    <string name="info_updated">Last updated</string>
+    <string name="info_expires">Expires</string>
+
+    <!-- Edit -->
+    <string name="edit_title">Edit link</string>
+    <string name="create_title">New link</string>
+    <string name="edit_loading_title">Loading</string>
+    <string name="edit_loading_subtitle">Reading the link from your instance…</string>
+    <string name="edit_open_failed">Couldn’t open link</string>
+    <string name="field_url">Target URL</string>
+    <string name="field_url_hint">The short link redirects to this address</string>
+    <string name="field_slug">Slug</string>
+    <string name="slug_locked">The slug can’t be changed after creation</string>
+    <string name="slug_hint">Leave empty to let the instance generate one. Lowercase letters, digits, and hyphens only.</string>
+    <string name="field_expiration">Expiration</string>
+    <string name="expiration_none">Never expires</string>
+    <string name="cd_clear_expiration">Clear expiration</string>
+    <string name="field_comment">Note (optional)</string>
+    <string name="section_tags">Tags</string>
+    <string name="field_add_tag">Add tag</string>
+    <string name="tag_limit_hint">Up to 10 tags, 32 characters each</string>
+    <string name="section_known_tags">Existing tags</string>
+    <string name="advanced_note">Password protection, geo-routing, URL cloaking, and other advanced options aren’t available yet. Values configured on the web are preserved when editing.</string>
+    <string name="error_url_invalid">Enter a full URL starting with http:// or https://</string>
+    <string name="error_slug_invalid">Slugs may contain letters, digits, and hyphens only, and can’t use “dashboard”</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_not_connected">Not connected</string>
+    <string name="settings_not_verified">Identity not verified</string>
+    <string name="action_reverify">Verify again</string>
+    <string name="action_disconnect">Disconnect</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="label_theme_mode">Theme</string>
+    <string name="theme_system">Follow system</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="label_dynamic_color">Dynamic color</string>
+    <string name="dynamic_color_hint">Use the system wallpaper palette (Android 12+)</string>
+    <string name="dynamic_color_unsupported">Dynamic color isn’t available on this Android version</string>
+    <string name="section_about">About</string>
+    <string name="label_version">Version</string>
+    <string name="link_sink_project">Sink on GitHub</string>
+    <string name="link_sink_docs">Sink documentation</string>
+    <string name="about_blurb">Sink for Android is a third-party client for managing short links on self-hosted Sink instances through the Sink REST API.</string>
+    <string name="credentials_note">Credentials are stored only in this app’s private storage.</string>
+    <string name="dialog_disconnect_title">Disconnect</string>
+    <string name="dialog_disconnect_message">This removes the saved instance URL and access token from this device. Your links stay on the server.</string>
+    <string name="snackbar_verified">Verified as %1$s</string>
+    <string name="auth_site_token">Site token</string>
+    <string name="auth_access_user">Cloudflare Access (user)</string>
+    <string name="auth_access_service">Cloudflare Access (service)</string>
+    <string name="auth_unverified">Not verified</string>
+
+    <!-- Errors -->
+    <string name="error_not_connected">Not connected to a Sink instance</string>
+    <string name="error_unrecognized_data">The instance returned unrecognized data. Check that the URL points to a Sink instance.</string>
+    <string name="error_network">Network request failed. Check the instance URL and your connection.</string>
+    <string name="error_bad_request">Invalid request parameters</string>
+    <string name="error_unauthorized">Invalid or expired token. Reconnect in Settings.</string>
+    <string name="error_forbidden">The instance denied access</string>
+    <string name="error_not_found">Not found; it may have been deleted</string>
+    <string name="error_conflict">The link was just modified. Refresh and try again.</string>
+    <string name="error_storage_not_ready">Instance storage isn’t ready. Open the Links page on the web first.</string>
+    <string name="error_rate_limited">Too many requests. Try again later.</string>
+    <string name="error_server">Instance unavailable (HTTP %1$d)</string>
+    <string name="error_http">Request failed (HTTP %1$d)</string>
+    <string name="snackbar_deleted">Deleted %1$s</string>
 </resources>

@@ -48,12 +48,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import cool.sink.mobile.R
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.ui.asString
 import cool.sink.mobile.ui.components.EmptyState
 import cool.sink.mobile.ui.vm.LinkEditViewModel
 import cool.sink.mobile.util.endOfDayEpochSeconds
@@ -87,10 +90,10 @@ fun LinkEditScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (state.isEdit) "编辑短链" else "新建短链") },
+                title = { Text(if (state.isEdit) stringResource(R.string.edit_title) else stringResource(R.string.create_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
                 actions = {
@@ -103,7 +106,7 @@ fun LinkEditScreen(
                         )
                     } else {
                         TextButton(onClick = viewModel::save, enabled = !state.loading) {
-                            Text("保存", style = MaterialTheme.typography.titleSmall)
+                            Text(stringResource(R.string.action_save), style = MaterialTheme.typography.titleSmall)
                         }
                     }
                 },
@@ -113,17 +116,17 @@ fun LinkEditScreen(
         when {
             state.loading -> EmptyState(
                 icon = Icons.Outlined.Link,
-                title = "正在加载",
-                subtitle = "正在从实例读取短链信息…",
+                title = stringResource(R.string.edit_loading_title),
+                subtitle = stringResource(R.string.edit_loading_subtitle),
                 modifier = Modifier.padding(innerPadding),
             )
 
             state.error != null && !state.isEdit -> EmptyState(
                 icon = Icons.Outlined.ErrorOutline,
-                title = "无法打开短链",
-                subtitle = state.error.orEmpty(),
+                title = stringResource(R.string.edit_open_failed),
+                subtitle = state.error?.asString().orEmpty(),
                 modifier = Modifier.padding(innerPadding),
-                actionLabel = "返回",
+                actionLabel = stringResource(R.string.action_back),
                 onAction = onBack,
             )
 
@@ -140,10 +143,10 @@ fun LinkEditScreen(
                     value = state.url,
                     onValueChange = viewModel::onUrlChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("目标地址") },
+                    label = { Text(stringResource(R.string.field_url)) },
                     isError = state.urlError != null,
                     supportingText = {
-                        Text(state.urlError ?: "短链会跳转到这个地址")
+                        Text(state.urlError?.asString() ?: stringResource(R.string.field_url_hint))
                     },
                     minLines = 2,
                     maxLines = 4,
@@ -158,15 +161,15 @@ fun LinkEditScreen(
                     value = state.slug,
                     onValueChange = viewModel::onSlugChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("短码") },
+                    label = { Text(stringResource(R.string.field_slug)) },
                     readOnly = state.isEdit,
                     isError = state.slugError != null,
                     supportingText = {
                         Text(
                             when {
-                                state.slugError != null -> state.slugError.orEmpty()
-                                state.isEdit -> "短码创建后不可修改"
-                                else -> "留空则由实例自动生成；仅支持小写字母、数字和连字符"
+                                state.slugError != null -> state.slugError?.asString().orEmpty()
+                                state.isEdit -> stringResource(R.string.slug_locked)
+                                else -> stringResource(R.string.slug_hint)
                             },
                         )
                     },
@@ -188,18 +191,18 @@ fun LinkEditScreen(
                         Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                text = "过期时间",
+                                text = stringResource(R.string.field_expiration),
                                 style = MaterialTheme.typography.labelMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                             Text(
-                                text = state.expiration?.let { "有效期至 ${formatDate(it)}" } ?: "永久有效",
+                                text = state.expiration?.let { stringResource(R.string.expires_at, formatDate(it) ?: "-") } ?: stringResource(R.string.expiration_none),
                                 style = MaterialTheme.typography.bodyLarge,
                             )
                         }
                         if (state.expiration != null) {
                             IconButton(onClick = { viewModel.onExpirationChange(null) }) {
-                                Icon(Icons.Outlined.Close, contentDescription = "清除过期时间")
+                                Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.cd_clear_expiration))
                             }
                         } else {
                             Icon(Icons.Outlined.ChevronRight, contentDescription = null)
@@ -211,14 +214,14 @@ fun LinkEditScreen(
                     value = state.comment,
                     onValueChange = viewModel::onCommentChange,
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("备注（可选）") },
+                    label = { Text(stringResource(R.string.field_comment)) },
                     minLines = 2,
                     maxLines = 4,
                     shape = MaterialTheme.shapes.large,
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text("标签", style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.section_tags), style = MaterialTheme.typography.titleSmall)
 
                     if (state.tags.isNotEmpty()) {
                         FlowRow(
@@ -247,22 +250,22 @@ fun LinkEditScreen(
                             value = tagInput,
                             onValueChange = { tagInput = it },
                             modifier = Modifier.weight(1f),
-                            label = { Text("添加标签") },
+                            label = { Text(stringResource(R.string.field_add_tag)) },
                             singleLine = true,
                             shape = MaterialTheme.shapes.large,
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
                             keyboardActions = KeyboardActions(onDone = { submitTag() }),
-                            supportingText = { Text("最多 10 个标签，每个 32 字符以内") },
+                            supportingText = { Text(stringResource(R.string.tag_limit_hint)) },
                         )
                         IconButton(onClick = { submitTag() }) {
-                            Icon(Icons.Outlined.Add, contentDescription = "添加标签")
+                            Icon(Icons.Outlined.Add, contentDescription = stringResource(R.string.field_add_tag))
                         }
                     }
 
                     val suggestions = state.knownTags.filterNot { state.tags.contains(it) }
                     if (suggestions.isNotEmpty()) {
                         Text(
-                            text = "已有标签",
+                            text = stringResource(R.string.section_known_tags),
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -298,7 +301,7 @@ fun LinkEditScreen(
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "密码保护、地理分流、URL 伪装等高级选项暂未开放，编辑时会保留网页端已配置的值。",
+                            text = stringResource(R.string.advanced_note),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -307,7 +310,7 @@ fun LinkEditScreen(
 
                 if (state.error != null) {
                     Text(
-                        text = state.error.orEmpty(),
+                        text = state.error?.asString().orEmpty(),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium,
                     )
@@ -330,10 +333,10 @@ fun LinkEditScreen(
                         }
                         showDatePicker = false
                     },
-                ) { Text("确定") }
+                ) { Text(stringResource(R.string.action_confirm)) }
             },
             dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) { Text("取消") }
+                TextButton(onClick = { showDatePicker = false }) { Text(stringResource(R.string.action_cancel)) }
             },
         ) {
             DatePicker(state = datePickerState)

@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import cool.sink.mobile.R
 import cool.sink.mobile.data.Settings
 import cool.sink.mobile.data.SettingsStore
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.data.ThemeMode
+import cool.sink.mobile.util.UiText
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -33,7 +35,7 @@ class SettingsViewModel(
     private val _disconnected = MutableStateFlow(false)
     val disconnected: StateFlow<Boolean> = _disconnected.asStateFlow()
 
-    private val _messages = Channel<String>(Channel.BUFFERED)
+    private val _messages = Channel<UiText>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()
 
     fun verify() {
@@ -44,9 +46,9 @@ class SettingsViewModel(
                 val current = repository.currentSettings()
                 val info = repository.verify(current.baseUrl, current.token)
                 repository.saveConnection(current.baseUrl, current.token, info)
-                _messages.send("验证通过，当前身份：${info.userEmail}")
+                _messages.send(UiText(R.string.snackbar_verified, listOf(info.userEmail)))
             } catch (error: SinkException) {
-                _messages.send(error.message ?: "验证失败")
+                _messages.send(error.text)
             } finally {
                 _verifying.value = false
             }

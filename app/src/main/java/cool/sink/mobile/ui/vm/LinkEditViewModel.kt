@@ -5,11 +5,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import cool.sink.mobile.R
 import cool.sink.mobile.data.CreateLinkPayload
 import cool.sink.mobile.data.EditLinkPayload
 import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.util.UiText
 import cool.sink.mobile.util.decodeUrlForDisplay
 import cool.sink.mobile.util.isValidHttpUrl
 import cool.sink.mobile.util.normalizeTag
@@ -36,9 +38,9 @@ class LinkEditViewModel(
         val expiration: Long? = null,
         val tags: List<String> = emptyList(),
         val knownTags: List<String> = emptyList(),
-        val urlError: String? = null,
-        val slugError: String? = null,
-        val error: String? = null,
+        val urlError: UiText? = null,
+        val slugError: UiText? = null,
+        val error: UiText? = null,
         val saved: Boolean = false,
     )
 
@@ -102,12 +104,12 @@ class LinkEditViewModel(
             ?.takeIf { enteredUrl == decodeUrlForDisplay(it) }
             ?: enteredUrl
         if (!isValidHttpUrl(resolvedUrl)) {
-            _state.update { it.copy(urlError = "请输入以 http:// 或 https:// 开头的完整链接") }
+            _state.update { it.copy(urlError = UiText(R.string.error_url_invalid)) }
             return
         }
         val slug = snapshot.slug.trim()
         if (!snapshot.isEdit && slug.isNotEmpty() && (!slugPattern.matches(slug) || slug.equals("dashboard", true))) {
-            _state.update { it.copy(slugError = "短码只能包含字母、数字和连字符，且不能占用 dashboard") }
+            _state.update { it.copy(slugError = UiText(R.string.error_slug_invalid)) }
             return
         }
         _state.update { it.copy(saving = true, error = null) }
@@ -138,7 +140,7 @@ class LinkEditViewModel(
                 }
                 _state.update { it.copy(saving = false, saved = true) }
             } catch (error: SinkException) {
-                _state.update { it.copy(saving = false, error = error.message ?: "保存失败") }
+                _state.update { it.copy(saving = false, error = error.text) }
             }
         }
     }
@@ -160,7 +162,7 @@ class LinkEditViewModel(
                     )
                 }
             } catch (error: SinkException) {
-                _state.update { it.copy(loading = false, error = error.message) }
+                _state.update { it.copy(loading = false, error = error.text) }
             }
         }
     }

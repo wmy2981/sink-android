@@ -5,9 +5,11 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import cool.sink.mobile.R
 import cool.sink.mobile.data.SinkApiFactory
 import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
+import cool.sink.mobile.util.UiText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -20,7 +22,7 @@ class ConnectViewModel(private val repository: SinkRepository) : ViewModel() {
         val url: String = "",
         val token: String = "",
         val loading: Boolean = false,
-        val error: String? = null,
+        val error: UiText? = null,
         val connected: Boolean = false,
     )
 
@@ -42,12 +44,12 @@ class ConnectViewModel(private val repository: SinkRepository) : ViewModel() {
         val snapshot = _state.value
         val baseUrl = SinkApiFactory.normalizeBaseUrl(snapshot.url)
         if (baseUrl == null) {
-            _state.update { it.copy(error = "请填写合法的实例地址，例如 https://sink.example.com") }
+            _state.update { it.copy(error = UiText(R.string.error_invalid_instance_url)) }
             return
         }
         val token = snapshot.token.trim()
         if (token.isEmpty()) {
-            _state.update { it.copy(error = "请填写实例的访问令牌") }
+            _state.update { it.copy(error = UiText(R.string.error_token_required)) }
             return
         }
         _state.update { it.copy(loading = true, error = null) }
@@ -57,7 +59,7 @@ class ConnectViewModel(private val repository: SinkRepository) : ViewModel() {
                 repository.saveConnection(baseUrl, token, info)
                 _state.update { it.copy(loading = false, url = baseUrl, token = token, connected = true) }
             } catch (error: SinkException) {
-                _state.update { it.copy(loading = false, error = error.message ?: "连接失败") }
+                _state.update { it.copy(loading = false, error = error.text) }
             }
         }
     }

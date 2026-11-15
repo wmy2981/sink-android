@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,10 +49,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cool.sink.mobile.BuildConfig
+import cool.sink.mobile.R
 import cool.sink.mobile.data.SettingsStore
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.data.ThemeMode
@@ -74,9 +77,11 @@ fun SettingsScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
     var showDisconnectDialog by remember { mutableStateOf(false) }
+    val notConnected = stringResource(R.string.settings_not_connected)
+    val notVerified = stringResource(R.string.settings_not_verified)
 
     LaunchedEffect(Unit) {
-        viewModel.messages.collect { snackbarHostState.showSnackbar(it) }
+        viewModel.messages.collect { snackbarHostState.showSnackbar(it.resolve(context)) }
     }
     LaunchedEffect(disconnected) {
         if (disconnected) onDisconnected()
@@ -85,10 +90,10 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("设置") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.action_back))
                     }
                 },
             )
@@ -113,11 +118,11 @@ fun SettingsScreen(
                         Spacer(Modifier.width(14.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                text = settings.baseUrl.ifBlank { "未连接" },
+                                text = settings.baseUrl.ifBlank { notConnected },
                                 style = MaterialTheme.typography.titleMedium,
                             )
                             Text(
-                                text = settings.email.ifBlank { "尚未验证身份" },
+                                text = settings.email.ifBlank { notVerified },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -146,26 +151,29 @@ fun SettingsScreen(
                             if (verifying) {
                                 CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
                             } else {
-                                Text("重新验证")
+                                Text(stringResource(R.string.action_reverify))
                             }
                         }
                         TextButton(
                             onClick = { showDisconnectDialog = true },
                             modifier = Modifier.weight(1f),
                         ) {
-                            Text("断开连接", color = MaterialTheme.colorScheme.error)
+                            Text(stringResource(R.string.action_disconnect), color = MaterialTheme.colorScheme.error)
                         }
                     }
                 }
             }
 
-            SettingsCard(icon = Icons.Outlined.Palette, title = "外观") {
+            SettingsCard(icon = Icons.Outlined.Palette, title = stringResource(R.string.section_appearance)) {
                 Text(
-                    text = "主题模式",
+                    text = stringResource(R.string.label_theme_mode),
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     ThemeMode.entries.forEach { mode ->
                         FilterChip(
                             selected = settings.themeMode == mode,
@@ -183,12 +191,12 @@ fun SettingsScreen(
                     )
                     Spacer(Modifier.width(10.dp))
                     Column(Modifier.weight(1f)) {
-                        Text("动态取色", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.label_dynamic_color), style = MaterialTheme.typography.bodyLarge)
                         Text(
                             text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                                "使用系统壁纸调色板（Android 12+）"
+                                stringResource(R.string.dynamic_color_hint)
                             } else {
-                                "当前系统版本不支持动态取色"
+                                stringResource(R.string.dynamic_color_unsupported)
                             },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -202,27 +210,27 @@ fun SettingsScreen(
                 }
             }
 
-            SettingsCard(icon = Icons.Outlined.Info, title = "关于") {
-                InfoLine("版本", "v${BuildConfig.VERSION_NAME}")
+            SettingsCard(icon = Icons.Outlined.Info, title = stringResource(R.string.section_about)) {
+                InfoLine(stringResource(R.string.label_version), "v${BuildConfig.VERSION_NAME}")
                 LinkRow(
                     icon = Icons.Outlined.Link,
-                    label = "Sink 开源项目",
+                    label = stringResource(R.string.link_sink_project),
                     onClick = { openUrl(context, "https://github.com/ccbikai/Sink") },
                 )
                 LinkRow(
                     icon = Icons.AutoMirrored.Outlined.OpenInNew,
-                    label = "Sink 使用文档",
+                    label = stringResource(R.string.link_sink_docs),
                     onClick = { openUrl(context, "https://sink.cool") },
                 )
                 Text(
-                    text = "Sink for Android 是第三方客户端，通过 Sink REST API 管理自建实例的短链。",
+                    text = stringResource(R.string.about_blurb),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
             Text(
-                text = "凭据仅保存在本机应用私有存储中。",
+                text = stringResource(R.string.credentials_note),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.padding(horizontal = 4.dp, vertical = 8.dp),
@@ -232,9 +240,9 @@ fun SettingsScreen(
 
     if (showDisconnectDialog) {
         ConfirmDialog(
-            title = "断开连接",
-            message = "将清除本机保存的实例地址和访问令牌，短链数据仍保留在服务器上。",
-            confirmLabel = "断开",
+            title = stringResource(R.string.dialog_disconnect_title),
+            message = stringResource(R.string.dialog_disconnect_message),
+            confirmLabel = stringResource(R.string.action_disconnect),
             onConfirm = {
                 showDisconnectDialog = false
                 viewModel.disconnect()
@@ -299,16 +307,20 @@ private fun LinkRow(icon: ImageVector, label: String, onClick: () -> Unit) {
     }
 }
 
-private fun themeLabel(mode: ThemeMode): String = when (mode) {
-    ThemeMode.SYSTEM -> "跟随系统"
-    ThemeMode.LIGHT -> "浅色"
-    ThemeMode.DARK -> "深色"
-}
+@Composable
+private fun themeLabel(mode: ThemeMode): String = stringResource(
+    when (mode) {
+        ThemeMode.SYSTEM -> R.string.theme_system
+        ThemeMode.LIGHT -> R.string.theme_light
+        ThemeMode.DARK -> R.string.theme_dark
+    },
+)
 
+@Composable
 private fun authMethodLabel(method: String): String = when (method) {
-    "site-token" -> "站点令牌认证"
-    "access-user" -> "Cloudflare Access（用户）"
-    "access-service" -> "Cloudflare Access（服务）"
-    "" -> "未验证"
+    "site-token" -> stringResource(R.string.auth_site_token)
+    "access-user" -> stringResource(R.string.auth_access_user)
+    "access-service" -> stringResource(R.string.auth_access_service)
+    "" -> stringResource(R.string.auth_unverified)
     else -> method
 }
