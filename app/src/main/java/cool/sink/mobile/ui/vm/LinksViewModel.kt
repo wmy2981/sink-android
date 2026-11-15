@@ -8,6 +8,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import cool.sink.mobile.R
 import cool.sink.mobile.data.Link
+import cool.sink.mobile.data.LinkCounters
 import cool.sink.mobile.data.SearchItem
 import cool.sink.mobile.data.SinkApiFactory
 import cool.sink.mobile.data.SinkException
@@ -51,6 +52,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         val status: StatusFilter = StatusFilter.ACTIVE,
         val selectedTag: String? = null,
         val tags: List<TagCount> = emptyList(),
+        val counters: Map<String, LinkCounters> = emptyMap(),
         val listComplete: Boolean = true,
         val cursor: String? = null,
         val error: UiText? = null,
@@ -111,6 +113,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                         searchResults = null,
                     )
                 }
+                loadCounters(page.links)
             } catch (error: SinkException) {
                 _state.update {
                     it.copy(loading = false, refreshing = false, error = error.text)
@@ -140,6 +143,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                         listComplete = page.listComplete,
                     )
                 }
+                loadCounters(page.links)
             } catch (error: SinkException) {
                 _state.update { it.copy(loadingMore = false) }
                 _messages.send(error.text)
@@ -184,6 +188,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                     state.copy(
                         links = state.links.filterNot { it.slug == link.slug },
                         searchResults = state.searchResults?.filterNot { it.slug == link.slug },
+                        counters = link.id?.let { id -> state.counters - id } ?: state.counters,
                     )
                 }
                 _messages.send(UiText(R.string.snackbar_deleted, listOf(link.slug)))
@@ -202,6 +207,19 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
             }
         } catch (error: SinkException) {
             _state.update { it.copy(searching = false, error = error.text) }
+        }
+    }
+
+    private fun loadCounters(links: List<Link>) {
+        val ids = links.mapNotNull { it.id }.distinct()
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            runCatching { repository.linkCounters(ids) }
+                .onSuccess { list ->
+                    val fetched = list.associateBy { it.id }
+                    val values = ids.associateWith { id -> fetched[id] ?: LinkCounters(id = id) }
+                    _state.update { state -> state.copy(counters = state.counters + values) }
+                }
         }
     }
 

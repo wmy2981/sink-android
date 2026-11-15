@@ -66,6 +66,12 @@
     <string name="info_updated">最近更新</string>
     <string name="info_expires">过期时间</string>
 
+    <string name="stat_visits">访问量</string>
+    <string name="stat_visitors">访客数</string>
+    <string name="stat_referers">来源数</string>
+    <string name="cd_open_target">打开目标地址</string>
+    <string name="link_unsafe">安全提示</string>
+
     <!-- 编辑 -->
     <string name="edit_title">编辑短链</string>
     <string name="create_title">新建短链</string>

@@ -105,6 +105,25 @@ class SinkApiFactoryTest {
     }
 
     @Test
+    fun `link counters request sends all ids`() {
+        server.enqueue(
+            MockResponse().setResponseCode(200).setHeader("Content-Type", "application/json").setBody(
+                """{"data":[{"id":"a","visits":3,"visitors":2,"referers":1}]}""",
+            ),
+        )
+
+        val api = factory.create(server.url("/").toString(), "token")
+        val counters = kotlinx.coroutines.runBlocking { api.linkCounters("a,b").data.orEmpty() }
+
+        val request = server.takeRequest()
+        assertEquals("/api/stats/counters", request.requestUrl?.encodedPath)
+        assertEquals("a,b", request.requestUrl?.queryParameter("id"))
+        assertEquals(3L, counters.single().visits)
+        assertEquals(2L, counters.single().visitors)
+        assertEquals(1L, counters.single().referers)
+    }
+
+    @Test
     fun `dashboard html request keeps an explicit accept header`() {
         val html = """<script>window.__NUXT__={};window.__NUXT__.config={public:{slugDefaultLength:"8"}}</script>"""
         server.enqueue(

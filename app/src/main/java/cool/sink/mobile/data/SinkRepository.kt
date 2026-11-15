@@ -83,6 +83,11 @@ class SinkRepository(
 
     suspend fun tags(): List<TagCount> = wrap { api().tags() }
 
+    suspend fun linkCounters(ids: List<String>): List<LinkCounters> {
+        if (ids.isEmpty()) return emptyList()
+        return wrap { api().linkCounters(ids.joinToString(",")).data.orEmpty() }
+    }
+
     suspend fun link(slug: String): Link = wrap { api().queryLink(slug) }
 
     suspend fun createLink(payload: CreateLinkPayload): Link = wrap { api().createLink(payload).link }

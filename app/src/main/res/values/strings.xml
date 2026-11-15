@@ -66,6 +66,12 @@
     <string name="info_updated">Last updated</string>
     <string name="info_expires">Expires</string>
 
+    <string name="stat_visits">Visits</string>
+    <string name="stat_visitors">Visitors</string>
+    <string name="stat_referers">Referrers</string>
+    <string name="cd_open_target">Open target URL</string>
+    <string name="link_unsafe">Unsafe link</string>
+
     <!-- Edit -->
     <string name="edit_title">Edit link</string>
     <string name="create_title">New link</string>

@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
+import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.CloudOff
@@ -33,13 +35,17 @@ import androidx.compose.material.icons.automirrored.outlined.Label
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.automirrored.outlined.Sort
 import androidx.compose.material.icons.outlined.FilterList
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material.icons.outlined.LinkOff
+import androidx.compose.material.icons.outlined.LocalFireDepartment
 import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.QrCode2
-import androidx.compose.material.icons.outlined.Schedule
+import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -65,6 +71,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -82,17 +89,14 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import cool.sink.mobile.R
 import cool.sink.mobile.data.Link
+import cool.sink.mobile.data.LinkCounters
 import cool.sink.mobile.data.SearchItem
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.ui.asString
@@ -110,6 +114,7 @@ import cool.sink.mobile.ui.vm.LinksViewModel
 import cool.sink.mobile.ui.vm.SortOption
 import cool.sink.mobile.ui.vm.StatusFilter
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.formatDate
 import cool.sink.mobile.util.formatDateTime
 import kotlinx.coroutines.launch
 
@@ -309,16 +314,16 @@ fun LinksScreen(
                             items(state.links, key = { it.slug }) { link ->
                                 LinkCard(
                                     link = link,
-                                    host = state.host,
+                                    counters = link.id?.let { state.counters[it] },
                                     onOpen = { selectedLink = link },
                                     onCopy = { copyLink(link) },
-                                    onShare = {
-                                        shareText(context, buildShortUrl(state.baseUrl, link.slug))
-                                    },
-                                    onBrowser = {
-                                        if (!openUrl(context, buildShortUrl(state.baseUrl, link.slug))) {
+                                    onOpenTarget = {
+                                        if (!openUrl(context, link.url)) {
                                             scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.snackbar_no_browser)) }
                                         }
+                                    },
+                                    onShare = {
+                                        shareText(context, buildShortUrl(state.baseUrl, link.slug))
                                     },
                                     onEdit = { onEdit(link.slug) },
                                     onDelete = { pendingDelete = link },
@@ -457,15 +462,18 @@ private fun ChipDropdown(
 @Composable
 private fun LinkCard(
     link: Link,
-    host: String,
+    counters: LinkCounters?,
     onOpen: () -> Unit,
     onCopy: () -> Unit,
+    onOpenTarget: () -> Unit,
     onShare: () -> Unit,
-    onBrowser: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
 ) {
     var menuExpanded by remember { mutableStateOf(false) }
+    val summary = link.title?.trim()?.takeIf { it.isNotEmpty() }
+        ?: link.description?.trim()?.takeIf { it.isNotEmpty() }
+        ?: link.comment?.trim()?.takeIf { it.isNotEmpty() }
 
     Card(
         onClick = onOpen,
@@ -477,63 +485,72 @@ private fun LinkCard(
             modifier = Modifier.padding(start = 16.dp, top = 12.dp, end = 6.dp, bottom = 14.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                LinkFavicon(url = link.url, size = 36.dp)
-                Spacer(Modifier.width(10.dp))
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(
-                            SpanStyle(
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Normal,
-                                fontSize = 13.sp,
-                            ),
-                        ) { append("$host/") }
-                        withStyle(
-                            SpanStyle(
-                                color = MaterialTheme.colorScheme.primary,
-                                fontWeight = FontWeight.SemiBold,
-                            ),
-                        ) { append(link.slug) }
-                    },
-                    style = MaterialTheme.typography.titleMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f),
-                )
-                if (link.isExpired) {
-                    Surface(
-                        shape = RoundedCornerShape(6.dp),
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                    ) {
+                LinkFavicon(url = link.url, size = 40.dp)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = stringResource(R.string.status_expired),
-                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                            style = MaterialTheme.typography.labelSmall,
+                            text = link.slug,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        if (link.unsafe == true) {
+                            Spacer(Modifier.width(4.dp))
+                            Icon(
+                                imageVector = Icons.Outlined.WarningAmber,
+                                contentDescription = stringResource(R.string.link_unsafe),
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(15.dp),
+                            )
+                        }
+                        if (link.isExpired) {
+                            Spacer(Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = MaterialTheme.colorScheme.errorContainer,
+                                contentColor = MaterialTheme.colorScheme.onErrorContainer,
+                            ) {
+                                Text(
+                                    text = stringResource(R.string.status_expired),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
+                                    style = MaterialTheme.typography.labelSmall,
+                                )
+                            }
+                        }
+                    }
+                    if (!summary.isNullOrEmpty()) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(
+                            text = summary,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                         )
                     }
+                }
+                IconButton(onClick = onCopy) {
+                    Icon(
+                        imageVector = Icons.Outlined.ContentCopy,
+                        contentDescription = stringResource(R.string.menu_copy_link),
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                IconButton(onClick = onOpenTarget) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                        contentDescription = stringResource(R.string.cd_open_target),
+                        modifier = Modifier.size(20.dp),
+                    )
                 }
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {
                         Icon(Icons.Outlined.MoreVert, contentDescription = stringResource(R.string.cd_more_actions))
                     }
                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_copy_link)) },
-                            leadingIcon = { Icon(Icons.Outlined.ContentCopy, contentDescription = null) },
-                            onClick = {
-                                menuExpanded = false
-                                onCopy()
-                            },
-                        )
-                        DropdownMenuItem(
-                            text = { Text(stringResource(R.string.menu_open_browser)) },
-                            leadingIcon = { Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null) },
-                            onClick = {
-                                menuExpanded = false
-                                onBrowser()
-                            },
-                        )
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.action_share)) },
                             leadingIcon = { Icon(Icons.Outlined.Share, contentDescription = null) },
@@ -568,64 +585,130 @@ private fun LinkCard(
                 }
             }
 
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = decodeUrlForDisplay(link.url),
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.padding(end = 10.dp),
-            )
-
-            if (!link.comment.isNullOrBlank()) {
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = link.comment,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.padding(end = 10.dp),
+            Spacer(Modifier.height(10.dp))
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CalendarMonth,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(15.dp),
                 )
-            }
-
-            if (link.tags.isNotEmpty()) {
-                Spacer(Modifier.height(8.dp))
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(end = 10.dp),
-                ) {
-                    link.tags.take(4).forEach { tag -> TagPill(tag) }
-                    if (link.tags.size > 4) {
-                        Text(
-                            text = "+${link.tags.size - 4}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.outline,
-                            modifier = Modifier.padding(top = 3.dp),
-                        )
-                    }
-                }
-            }
-
-            if (link.expiration != null) {
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Spacer(Modifier.width(4.dp))
+                Text(
+                    text = formatDate(link.createdAt) ?: "-",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (link.expiration != null) {
+                    VerticalDivider(
+                        modifier = Modifier
+                            .padding(horizontal = 8.dp)
+                            .height(14.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant,
+                    )
                     Icon(
-                        imageVector = Icons.Outlined.Schedule,
+                        imageVector = Icons.Outlined.HourglassEmpty,
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(14.dp),
+                        tint = if (link.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(15.dp),
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
-                        text = stringResource(R.string.expires_at, formatDateTime(link.expiration) ?: "-"),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
+                        text = formatDate(link.expiration) ?: "-",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (link.isExpired) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
+                VerticalDivider(
+                    modifier = Modifier
+                        .padding(horizontal = 8.dp)
+                        .height(14.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant,
+                )
+                Text(
+                    text = decodeUrlForDisplay(link.url),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
             }
+
+            if (counters != null || link.tags.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(end = 10.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    if (counters != null) {
+                        StatBadge(
+                            icon = Icons.Outlined.TouchApp,
+                            value = counters.visits,
+                            label = stringResource(R.string.stat_visits),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        StatBadge(
+                            icon = Icons.Outlined.People,
+                            value = counters.visitors,
+                            label = stringResource(R.string.stat_visitors),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        StatBadge(
+                            icon = Icons.Outlined.LocalFireDepartment,
+                            value = counters.referers,
+                            label = stringResource(R.string.stat_referers),
+                        )
+                    }
+                    Spacer(Modifier.weight(1f))
+                    if (link.tags.isNotEmpty()) {
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(6.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            link.tags.take(2).forEach { tag ->
+                                TagPill(tag, modifier = Modifier.widthIn(max = 96.dp))
+                            }
+                            if (link.tags.size > 2) {
+                                Text(
+                                    text = "+${link.tags.size - 2}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.outline,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun StatBadge(icon: ImageVector, value: Long, label: String) {
+    Surface(
+        shape = RoundedCornerShape(percent = 50),
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = label,
+                modifier = Modifier.size(14.dp),
+            )
+            Spacer(Modifier.width(4.dp))
+            Text(value.toString(), style = MaterialTheme.typography.labelMedium)
         }
     }
 }

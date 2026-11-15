@@ -34,6 +34,9 @@ interface SinkApi {
     @GET("api/link/tags")
     suspend fun tags(): List<TagCount>
 
+    @GET("api/stats/counters")
+    suspend fun linkCounters(@Query("id") ids: String): LinkCountersResponse
+
     @GET("api/link/query")
     suspend fun queryLink(@Query("slug") slug: String): Link
 

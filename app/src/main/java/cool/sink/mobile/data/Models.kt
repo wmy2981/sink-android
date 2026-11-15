@@ -57,6 +57,20 @@ data class TagCount(
     val count: Int = 0,
 )
 
+/** Usage counters shown on link cards; absent rows mean zero activity. */
+@Serializable
+data class LinkCounters(
+    val id: String,
+    val visits: Long = 0,
+    val visitors: Long = 0,
+    val referers: Long = 0,
+)
+
+@Serializable
+data class LinkCountersResponse(
+    val data: List<LinkCounters>? = null,
+)
+
 @Serializable
 data class VerifyResponse(
     val name: String = "Sink",
