@@ -116,6 +116,10 @@ fun randomSlug(length: Int = 6): String = buildString(length) {
 fun hostOfLink(url: String): String? =
     runCatching { URI(url).host }.getOrNull()?.takeIf { it.isNotBlank() }
 
+/** Same favicon endpoint and Sink fallback image the web dashboard uses. */
+fun faviconUrlForHost(host: String): String =
+    "https://unavatar.webp.se/$host?fallback=https://sink.cool/icon.png"
+
 /** Turns a stored asset path such as `/_assets/images/...` into an absolute URL. */
 fun resolveAssetUrl(baseUrl: String, path: String): String {
     val trimmed = path.trim()

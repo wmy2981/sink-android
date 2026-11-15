@@ -5,6 +5,7 @@ import cool.sink.mobile.data.matchesQuery
 import cool.sink.mobile.util.UtmValues
 import cool.sink.mobile.util.applyUtmValues
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.faviconUrlForHost
 import cool.sink.mobile.util.hostOfLink
 import cool.sink.mobile.util.isMaskedLinkPassword
 import cool.sink.mobile.util.isValidHttpUrl
@@ -109,6 +110,10 @@ class FormatsTest {
         assertEquals("github.com", hostOfLink("https://github.com/nuxt"))
         assertEquals("blog.csdn.net", hostOfLink("https://blog.csdn.net/cxrsdn/article/details/1"))
         assertNull(hostOfLink("not a url"))
+        assertEquals(
+            "https://unavatar.webp.se/github.com?fallback=https://sink.cool/icon.png",
+            faviconUrlForHost("github.com"),
+        )
     }
 
     @Test

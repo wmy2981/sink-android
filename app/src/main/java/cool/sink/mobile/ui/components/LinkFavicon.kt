@@ -23,6 +23,7 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import cool.sink.mobile.util.faviconUrlForHost
 import cool.sink.mobile.util.hostOfLink
 import java.net.HttpURLConnection
 import java.net.URL
@@ -43,7 +44,7 @@ fun LinkFavicon(
     size: Dp = 36.dp,
 ) {
     val host = remember(url) { hostOfLink(url) }
-    val faviconUrl = remember(host) { host?.let { "https://unavatar.webp.se/$it" } }
+    val faviconUrl = remember(host) { host?.let(::faviconUrlForHost) }
     val bitmap by produceState<Bitmap?>(
         initialValue = faviconUrl?.let { faviconCache.get(it) },
         key1 = faviconUrl,
@@ -68,13 +69,13 @@ fun LinkFavicon(
             modifier = modifier
                 .size(size)
                 .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary),
+                .background(MaterialTheme.colorScheme.onSurface),
             contentAlignment = Alignment.Center,
         ) {
             Icon(
                 imageVector = Icons.Outlined.Bolt,
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
+                tint = MaterialTheme.colorScheme.surface,
                 modifier = Modifier.size(size * 0.55f),
             )
         }
