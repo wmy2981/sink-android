@@ -51,13 +51,17 @@ The app ships with English (default) and Simplified Chinese. It follows the syst
 
 ## CI and APK artifacts
 
-The GitHub Actions workflow in `.github/workflows/android.yml` runs on pushes, pull requests, tags, and manual dispatches. It:
+The GitHub Actions workflow in `.github/workflows/android.yml` runs on pushes to `main`, pull requests, and manual dispatches. It:
 
 1. runs the unit tests;
 2. builds debug and release APKs;
 3. uploads both APKs as the `sink-android-<run_number>` artifact, available under **Artifacts** on the run page.
 
 Release signing is injected through repository secrets: `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, and `KEY_PASSWORD`. Without those secrets (for example on pull requests from forks) the release build falls back to debug signing.
+
+## Releasing
+
+`.github/workflows/release.yml` publishes a release automatically when a `v*` tag is pushed. The tag must match `versionName` in `app/build.gradle.kts` (for example tag `v1.2.0` with `versionName = "1.2.0"`), otherwise the workflow fails. It runs the unit tests, builds the release APK with the release signing secrets, and creates a GitHub Release titled `Sink for Android <version>` with auto-generated notes and the APK attached as `sink-android-<version>.apk`. These secrets are mandatory there, so a release is never published with a debug-signed APK.
 
 ## Sink API used
 

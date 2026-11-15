@@ -51,13 +51,17 @@ PROPS
 
 ## CI 与 APK 产物
 
-GitHub Actions 工作流 `.github/workflows/android.yml` 在 push、PR、tag 与手动触发时执行：
+GitHub Actions 工作流 `.github/workflows/android.yml` 在推送到 `main`、PR 与手动触发时执行：
 
 1. 运行单元测试；
 2. 构建 debug 与 release APK；
 3. 将两个 APK 上传为构建产物 `sink-android-<run_number>`，在 Actions 运行页面底部 Artifacts 下载。
 
 Release 签名通过仓库 Secrets 注入：`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。未配置 Secret 时（例如来自 fork 的 PR）自动回退为 debug 签名。
+
+## 发行
+
+`.github/workflows/release.yml` 在推送 `v*` 标签时自动发行。标签必须与 `app/build.gradle.kts` 中的 `versionName` 一致（例如标签 `v1.2.0` 对应 `versionName = "1.2.0"`），否则工作流失败。它会运行单元测试、用发行签名 Secrets 构建 release APK，并创建标题为 `Sink for Android <版本号>` 的 GitHub Release，自动生成说明，并将 APK 以 `sink-android-<版本号>.apk` 附在发行页。该工作流强制要求签名 Secrets，因此不会发出 debug 签名的 APK。
 
 ## 使用的 Sink API
 
