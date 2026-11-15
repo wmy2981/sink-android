@@ -147,7 +147,6 @@ fun LinksScreen(
     }
 
     Scaffold(
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             LargeTopAppBar(
                 title = { Text("短链") },
@@ -257,6 +256,9 @@ fun LinksScreen(
                             )
                         } else {
                             LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .nestedScroll(scrollBehavior.nestedScrollConnection),
                                 contentPadding = PaddingValues(
                                     start = 16.dp,
                                     end = 16.dp,
@@ -286,11 +288,13 @@ fun LinksScreen(
 
                     else -> PullToRefreshBox(
                         isRefreshing = state.refreshing,
-                        onRefresh = { viewModel.refresh(showIndicator = false) },
+                        onRefresh = { viewModel.refresh(showIndicator = false, fromPull = true) },
                         modifier = Modifier.fillMaxSize(),
                     ) {
                         LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .nestedScroll(scrollBehavior.nestedScrollConnection),
                             contentPadding = PaddingValues(
                                 start = 16.dp,
                                 end = 16.dp,

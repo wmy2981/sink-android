@@ -77,7 +77,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         loadTags()
     }
 
-    fun refresh(showIndicator: Boolean = true) {
+    fun refresh(showIndicator: Boolean = true, fromPull: Boolean = false) {
         val snapshot = _state.value
         if (snapshot.query.isNotBlank()) {
             searchJob?.cancel()
@@ -88,7 +88,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
             _state.update {
                 it.copy(
                     loading = showIndicator && it.links.isEmpty(),
-                    refreshing = !showIndicator,
+                    refreshing = fromPull,
                     error = null,
                 )
             }
