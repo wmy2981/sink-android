@@ -54,6 +54,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         val tags: List<TagCount> = emptyList(),
         val counters: Map<String, LinkCounters> = emptyMap(),
         val listComplete: Boolean = true,
+        val loadMoreFailed: Boolean = false,
         val cursor: String? = null,
         val error: UiText? = null,
         val baseUrl: String = "",
@@ -67,6 +68,8 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
     val messages = _messages.receiveAsFlow()
 
     private var searchJob: Job? = null
+    private var refreshJob: Job? = null
+    private var loadMoreJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -89,12 +92,16 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
             searchJob = viewModelScope.launch { runSearch(snapshot.query) }
             return
         }
-        viewModelScope.launch {
+        refreshJob?.cancel()
+        loadMoreJob?.cancel()
+        refreshJob = viewModelScope.launch {
             _state.update {
                 it.copy(
                     loading = showIndicator && it.links.isEmpty(),
                     refreshing = fromPull,
+                    loadingMore = false,
                     error = null,
+                    loadMoreFailed = false,
                 )
             }
             try {
@@ -107,16 +114,23 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                     it.copy(
                         loading = false,
                         refreshing = false,
+                        loadingMore = false,
                         links = page.links,
                         cursor = page.cursor,
                         listComplete = page.listComplete,
+                        loadMoreFailed = false,
                         searchResults = null,
                     )
                 }
                 loadCounters(page.links)
+                loadTags()
             } catch (error: SinkException) {
                 _state.update {
                     it.copy(loading = false, refreshing = false, error = error.text)
+                }
+                // The empty state already renders the error; keep it visible otherwise.
+                if (_state.value.links.isNotEmpty() || _state.value.searchResults != null) {
+                    _messages.send(error.text)
                 }
             }
         }
@@ -126,8 +140,9 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         val snapshot = _state.value
         if (snapshot.loadingMore || snapshot.listComplete || snapshot.query.isNotBlank()) return
         val cursor = snapshot.cursor ?: return
-        viewModelScope.launch {
-            _state.update { it.copy(loadingMore = true) }
+        loadMoreJob?.cancel()
+        loadMoreJob = viewModelScope.launch {
+            _state.update { it.copy(loadingMore = true, loadMoreFailed = false) }
             try {
                 val page = repository.listLinks(
                     cursor = cursor,
@@ -145,7 +160,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                 }
                 loadCounters(page.links)
             } catch (error: SinkException) {
-                _state.update { it.copy(loadingMore = false) }
+                _state.update { it.copy(loadingMore = false, loadMoreFailed = true) }
                 _messages.send(error.text)
             }
         }
@@ -159,6 +174,10 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
             refresh(showIndicator = false)
             return
         }
+        refreshJob?.cancel()
+        loadMoreJob?.cancel()
+        // A cancelled refresh must not leave the list stuck behind its spinner.
+        _state.update { it.copy(loading = false, refreshing = false, loadingMore = false) }
         searchJob = viewModelScope.launch {
             delay(350)
             runSearch(value)
@@ -192,6 +211,7 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
                     )
                 }
                 _messages.send(UiText(R.string.snackbar_deleted, listOf(link.slug)))
+                loadTags()
             } catch (error: SinkException) {
                 _messages.send(error.text)
             }
@@ -203,10 +223,13 @@ class LinksViewModel(private val repository: SinkRepository) : ViewModel() {
         try {
             val results = repository.searchLinks(query)
             if (_state.value.query.trim() == query.trim()) {
-                _state.update { it.copy(searching = false, searchResults = results) }
+                _state.update { it.copy(searching = false, searchResults = results, error = null) }
             }
         } catch (error: SinkException) {
             _state.update { it.copy(searching = false, error = error.text) }
+            if (_state.value.links.isNotEmpty() || _state.value.searchResults != null) {
+                _messages.send(error.text)
+            }
         }
     }
 

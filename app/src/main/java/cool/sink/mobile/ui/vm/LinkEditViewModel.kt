@@ -80,6 +80,7 @@ class LinkEditViewModel(
         val googleError: UiText? = null,
         val geoError: UiText? = null,
         val error: UiText? = null,
+        val loadFailed: Boolean = false,
         val transientError: UiText? = null,
         val saved: Boolean = false,
     ) {
@@ -300,7 +301,10 @@ class LinkEditViewModel(
     fun save() {
         val snapshot = _state.value
         if (snapshot.saving) return
-        if (snapshot.isEdit && original == null) return
+        if (snapshot.isEdit && original == null) {
+            _state.update { it.copy(loadFailed = true) }
+            return
+        }
         val resolvedUrl = resolvedUrl(snapshot)
         if (resolvedUrl == null) {
             _state.update { it.copy(urlError = UiText(R.string.error_url_invalid)) }
@@ -388,7 +392,12 @@ class LinkEditViewModel(
                 }
                 _state.update { it.copy(saving = false, saved = true) }
             } catch (error: SinkException) {
-                _state.update { it.copy(saving = false, error = error.text) }
+                val text = if (error.code == 409 && !snapshot.isEdit) {
+                    UiText(R.string.error_slug_exists)
+                } else {
+                    error.text
+                }
+                _state.update { it.copy(saving = false, error = text) }
             }
         }
     }
@@ -432,7 +441,7 @@ class LinkEditViewModel(
                     )
                 }
             } catch (error: SinkException) {
-                _state.update { it.copy(loading = false, error = error.text) }
+                _state.update { it.copy(loading = false, error = error.text, loadFailed = true) }
             }
         }
     }

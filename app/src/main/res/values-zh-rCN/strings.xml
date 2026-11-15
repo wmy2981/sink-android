@@ -118,6 +118,7 @@
     <string name="field_description_hint">覆盖链接预览中的描述</string>
     <string name="field_image">社交图片</string>
     <string name="image_upload">上传图片</string>
+    <string name="image_uploading">正在上传图片…</string>
     <string name="image_upload_hint">支持 JPEG、PNG、WebP、GIF，最大 5 MB，需要实例配置 R2</string>
     <string name="image_replace">更换</string>
     <string name="image_remove">移除</string>
@@ -190,6 +191,7 @@
     <string name="error_forbidden">实例拒绝了本次访问</string>
     <string name="error_not_found">目标不存在，可能已被删除</string>
     <string name="error_conflict">链接刚刚被修改，请刷新后重试</string>
+    <string name="error_slug_exists">该短码已被占用，请换一个</string>
     <string name="error_storage_not_ready">实例存储尚未就绪，请先在网页端打开「链接」页面</string>
     <string name="error_rate_limited">请求过于频繁，请稍后再试</string>
     <string name="error_server">实例暂时不可用（HTTP %1$d）</string>

@@ -12,6 +12,7 @@ import cool.sink.mobile.data.SinkException
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.data.ThemeMode
 import cool.sink.mobile.util.UiText
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -38,12 +39,15 @@ class SettingsViewModel(
     private val _messages = Channel<UiText>(Channel.BUFFERED)
     val messages = _messages.receiveAsFlow()
 
+    private var verifyJob: Job? = null
+
     fun verify() {
         if (_verifying.value) return
         _verifying.value = true
-        viewModelScope.launch {
+        verifyJob = viewModelScope.launch {
             try {
                 val current = repository.currentSettings()
+                if (!current.isConnected) throw SinkException(UiText(R.string.error_not_connected))
                 val info = repository.verify(current.baseUrl, current.token)
                 repository.saveConnection(current.baseUrl, current.token, info)
                 _messages.send(UiText(R.string.snackbar_verified, listOf(info.userEmail)))
@@ -64,6 +68,10 @@ class SettingsViewModel(
     }
 
     fun disconnect() {
+        // A verify that finishes after disconnecting must not write the old credentials back.
+        verifyJob?.cancel()
+        verifyJob = null
+        _verifying.value = false
         viewModelScope.launch {
             settingsStore.clearConnection()
             _disconnected.value = true

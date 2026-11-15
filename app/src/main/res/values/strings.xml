@@ -118,6 +118,7 @@
     <string name="field_description_hint">Overrides the description in link previews</string>
     <string name="field_image">Social image</string>
     <string name="image_upload">Upload image</string>
+    <string name="image_uploading">Uploading image…</string>
     <string name="image_upload_hint">JPEG, PNG, WebP, or GIF up to 5 MB. Requires R2 on the instance.</string>
     <string name="image_replace">Replace</string>
     <string name="image_remove">Remove</string>
@@ -190,6 +191,7 @@
     <string name="error_forbidden">The instance denied access</string>
     <string name="error_not_found">Not found; it may have been deleted</string>
     <string name="error_conflict">The link was just modified. Refresh and try again.</string>
+    <string name="error_slug_exists">That slug is already taken. Choose another one.</string>
     <string name="error_storage_not_ready">Instance storage isn’t ready. Open the Links page on the web first.</string>
     <string name="error_rate_limited">Too many requests. Try again later.</string>
     <string name="error_server">Instance unavailable (HTTP %1$d)</string>

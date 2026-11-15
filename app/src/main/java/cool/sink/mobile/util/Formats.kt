@@ -7,8 +7,10 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 
 private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
 private val dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -23,25 +25,42 @@ fun formatDate(epochSeconds: Long?): String? = epochSeconds?.let {
 
 fun normalizeTag(raw: String): String = raw.trim().lowercase(Locale.ROOT)
 
+/**
+ * Accepts absolute http(s) URLs, including non-ASCII paths or hosts: OkHttp canonicalizes
+ * unicode and spaces into percent-encoded form, while [URI] rejects them outright.
+ */
 fun isValidHttpUrl(raw: String): Boolean {
     val value = raw.trim()
-    if (!value.startsWith("http://") && !value.startsWith("https://")) return false
-    return try {
-        val uri = URI(value)
-        !uri.host.isNullOrBlank()
-    } catch (_: Exception) {
-        false
+    val normalized = when {
+        value.startsWith("http://", ignoreCase = true) -> "http://" + value.substring(7)
+        value.startsWith("https://", ignoreCase = true) -> "https://" + value.substring(8)
+        else -> return false
     }
+    val url = normalized.toHttpUrlOrNull() ?: return false
+    return url.host.isNotBlank()
 }
 
-/** End of the selected local day in unix seconds, matching a "valid until" date. */
+/** End of the selected day in unix seconds, matching a "valid until" date. */
 fun endOfDayEpochSeconds(utcMillis: Long): Long =
     Instant.ofEpochMilli(utcMillis)
-        .atZone(ZoneId.systemDefault())
+        .atZone(ZoneOffset.UTC)
         .toLocalDate()
         .plusDays(1)
         .atStartOfDay(ZoneId.systemDefault())
         .toEpochSecond() - 1
+
+/**
+ * Converts a stored expiration back to the value [androidx.compose.material3.DatePicker]
+ * expects: midnight of that local day expressed in UTC, not the local end-of-day instant.
+ */
+fun datePickerMillis(epochSeconds: Long?): Long? = epochSeconds?.let {
+    Instant.ofEpochSecond(it)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
+}
 
 
 /**

@@ -63,6 +63,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -86,6 +87,7 @@ import cool.sink.mobile.ui.components.SwitchRow
 import cool.sink.mobile.ui.components.countryLabel
 import cool.sink.mobile.ui.vm.LinkEditViewModel
 import cool.sink.mobile.util.applyUtmValues
+import cool.sink.mobile.util.datePickerMillis
 import cool.sink.mobile.util.endOfDayEpochSeconds
 import cool.sink.mobile.util.formatDate
 import cool.sink.mobile.util.isValidHttpUrl
@@ -109,13 +111,13 @@ fun LinkEditScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbarHostState = remember { SnackbarHostState() }
-    var showDatePicker by remember { mutableStateOf(false) }
-    var showUtmDialog by remember { mutableStateOf(false) }
-    var tagInput by remember { mutableStateOf("") }
-    var linkSettingsExpanded by remember { mutableStateOf(false) }
-    var socialExpanded by remember { mutableStateOf(false) }
-    var deviceExpanded by remember { mutableStateOf(false) }
-    var geoExpanded by remember { mutableStateOf(false) }
+    var showDatePicker by rememberSaveable { mutableStateOf(false) }
+    var showUtmDialog by rememberSaveable { mutableStateOf(false) }
+    var tagInput by rememberSaveable { mutableStateOf("") }
+    var linkSettingsExpanded by rememberSaveable { mutableStateOf(false) }
+    var socialExpanded by rememberSaveable { mutableStateOf(false) }
+    var deviceExpanded by rememberSaveable { mutableStateOf(false) }
+    var geoExpanded by rememberSaveable { mutableStateOf(false) }
     var countryPickerIndex by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(state.saved) {
@@ -143,6 +145,12 @@ fun LinkEditScreen(
             viewModel.consumeTransientError()
         }
     }
+    LaunchedEffect(state.error, state.loadFailed) {
+        val error = state.error
+        if (error != null && !state.loadFailed) {
+            snackbarHostState.showSnackbar(error.resolve(context))
+        }
+    }
 
     val imagePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
@@ -150,7 +158,9 @@ fun LinkEditScreen(
         if (uri != null) {
             scope.launch {
                 val bytes = withContext(Dispatchers.IO) {
-                    context.contentResolver.openInputStream(uri)?.use { stream -> readAtMost(stream) }
+                    runCatching {
+                        context.contentResolver.openInputStream(uri)?.use { stream -> readAtMost(stream) }
+                    }.getOrNull()
                 }
                 if (bytes == null || bytes.isEmpty()) {
                     viewModel.reportImageReadFailed()
@@ -205,7 +215,7 @@ fun LinkEditScreen(
                 modifier = Modifier.padding(innerPadding),
             )
 
-            state.error != null && !state.isEdit -> EmptyState(
+            state.loadFailed -> EmptyState(
                 icon = Icons.Outlined.ErrorOutline,
                 title = stringResource(R.string.edit_open_failed),
                 subtitle = state.error?.asString().orEmpty(),
@@ -567,7 +577,11 @@ fun LinkEditScreen(
                                 }
                                 Text(
                                     text = stringResource(
-                                        if (canUpload) R.string.image_upload else R.string.error_image_slug_required,
+                                        when {
+                                            state.uploadingImage -> R.string.image_uploading
+                                            canUpload -> R.string.image_upload
+                                            else -> R.string.error_image_slug_required
+                                        },
                                     ),
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
@@ -713,7 +727,7 @@ fun LinkEditScreen(
     }
 
     if (showDatePicker) {
-        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = state.expiration?.times(1000))
+        val datePickerState = rememberDatePickerState(initialSelectedDateMillis = datePickerMillis(state.expiration))
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
             confirmButton = {

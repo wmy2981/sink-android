@@ -4,7 +4,9 @@ import cool.sink.mobile.data.Link
 import cool.sink.mobile.data.matchesQuery
 import cool.sink.mobile.util.UtmValues
 import cool.sink.mobile.util.applyUtmValues
+import cool.sink.mobile.util.datePickerMillis
 import cool.sink.mobile.util.decodeUrlForDisplay
+import cool.sink.mobile.util.endOfDayEpochSeconds
 import cool.sink.mobile.util.faviconUrlForHost
 import cool.sink.mobile.util.hostOfLink
 import cool.sink.mobile.util.isMaskedLinkPassword
@@ -59,10 +61,26 @@ class FormatsTest {
     fun `http urls are validated`() {
         assertTrue(isValidHttpUrl("https://example.com/path?q=1"))
         assertTrue(isValidHttpUrl("http://192.168.1.10:8080/a"))
+        assertTrue(isValidHttpUrl("https://example.com/中文"))
+        assertTrue(isValidHttpUrl("HTTPS://Example.com/uppercase"))
         assertFalse(isValidHttpUrl("example.com"))
         assertFalse(isValidHttpUrl("ftp://example.com"))
         assertFalse(isValidHttpUrl("https://"))
         assertFalse(isValidHttpUrl(""))
+    }
+
+    @Test
+    fun `expiration date keeps the picked day west of utc`() {
+        val original = java.util.TimeZone.getDefault()
+        try {
+            java.util.TimeZone.setDefault(java.util.TimeZone.getTimeZone("America/New_York"))
+            // DatePicker reports the picked day as 2026-01-10T00:00:00Z.
+            val picked = 1768003200000L
+            assertEquals(1768107599L, endOfDayEpochSeconds(picked))
+            assertEquals(picked, datePickerMillis(1768107599L))
+        } finally {
+            java.util.TimeZone.setDefault(original)
+        }
     }
 
     @Test

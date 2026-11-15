@@ -2,7 +2,6 @@ package cool.sink.mobile.data
 
 import cool.sink.mobile.R
 import cool.sink.mobile.util.UiText
-import cool.sink.mobile.util.decodeUrlForDisplay
 import cool.sink.mobile.util.parseSlugDefaultLength
 import java.io.IOException
 import kotlinx.coroutines.flow.Flow
@@ -53,8 +52,8 @@ class SinkRepository(
 
     /**
      * Sink stores target URLs as submitted, so Chinese characters are usually percent-encoded
-     * and SQL LIKE over the raw URL cannot match the decoded text a user types. Scan the active
-     * links page by page and match against decoded fields instead. Capped to keep it bounded.
+     * and SQL LIKE over the raw URL cannot match the decoded text a user types. Scan every link
+     * page by page and match against decoded fields instead. Capped to keep it bounded.
      */
     private suspend fun searchLinksLocally(query: String): List<SearchItem> {
         val results = LinkedHashMap<String, SearchItem>()
@@ -62,14 +61,14 @@ class SinkRepository(
         var pages = 0
         while (pages < 10) {
             val page = wrap {
-                api().listLinks(limit = 1000, cursor = cursor, sort = "newest", status = "active")
+                api().listLinks(limit = 1000, cursor = cursor, sort = "newest", status = "all")
             }
             page.links
                 .filter { it.matchesQuery(query) }
                 .forEach { link ->
                     results[link.slug] = SearchItem(
                         slug = link.slug,
-                        url = decodeUrlForDisplay(link.url),
+                        url = link.url,
                         comment = link.comment,
                         tags = link.tags,
                     )

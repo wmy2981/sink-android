@@ -99,11 +99,35 @@ private fun loadFavicon(url: String): Bitmap? = runCatching {
         instanceFollowRedirects = true
         setRequestProperty("User-Agent", "Sink-for-Android")
     }
-    connection.inputStream.use { stream -> BitmapFactory.decodeStream(stream) }
-}.getOrNull()?.let { decoded ->
-    if (decoded.width > 96 || decoded.height > 96) {
-        Bitmap.createScaledBitmap(decoded, 96, 96, true)
-    } else {
-        decoded
+    val bytes = try {
+        connection.inputStream.use { stream -> stream.readBytes() }
+    } finally {
+        connection.disconnect()
     }
+
+    // Decode bounds first so a large icon is sampled down instead of fully inflated.
+    val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+    BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
+    val options = BitmapFactory.Options().apply {
+        inSampleSize = sampleSizeFor(bounds.outWidth, bounds.outHeight, FAVICON_SIZE)
+    }
+    val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size, options)
+    when {
+        decoded == null -> null
+        decoded.width > FAVICON_SIZE || decoded.height > FAVICON_SIZE ->
+            Bitmap.createScaledBitmap(decoded, FAVICON_SIZE, FAVICON_SIZE, true)
+
+        else -> decoded
+    }
+}.getOrNull()
+
+private const val FAVICON_SIZE = 96
+
+private fun sampleSizeFor(width: Int, height: Int, target: Int): Int {
+    if (width <= 0 || height <= 0) return 1
+    var sample = 1
+    while (width / (sample * 2) >= target && height / (sample * 2) >= target) {
+        sample *= 2
+    }
+    return sample
 }

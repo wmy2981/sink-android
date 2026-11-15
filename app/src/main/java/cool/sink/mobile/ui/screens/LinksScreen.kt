@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -201,37 +202,40 @@ fun LinksScreen(
                 ),
             )
 
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp, vertical = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-                ChipDropdown(
-                    label = stringResource(state.sort.labelRes),
-                    icon = Icons.AutoMirrored.Outlined.Sort,
-                    options = SortOption.entries.map { it to stringResource(it.labelRes) },
-                    selectedOption = state.sort,
-                    onSelect = viewModel::onSortChange,
-                )
-                ChipDropdown(
-                    label = stringResource(state.status.labelRes),
-                    icon = Icons.Outlined.FilterList,
-                    options = StatusFilter.entries.map { it to stringResource(it.labelRes) },
-                    selectedOption = state.status,
-                    onSelect = viewModel::onStatusChange,
-                )
-                if (state.tags.isNotEmpty()) {
-                    val tagOptions = listOf<Pair<String?, String>>(null to stringResource(R.string.filter_all_tags)) +
-                        state.tags.map { it.name to "${it.name} · ${it.count}" }
+            // Filters and sorting apply to the list; search has its own result set.
+            if (state.query.isBlank()) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 16.dp, vertical = 6.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
                     ChipDropdown(
-                        label = state.selectedTag ?: stringResource(R.string.filter_tag),
-                        icon = Icons.AutoMirrored.Outlined.Label,
-                        options = tagOptions,
-                        selectedOption = state.selectedTag,
-                        onSelect = viewModel::onTagChange,
+                        label = stringResource(state.sort.labelRes),
+                        icon = Icons.AutoMirrored.Outlined.Sort,
+                        options = SortOption.entries.map { it to stringResource(it.labelRes) },
+                        selectedOption = state.sort,
+                        onSelect = viewModel::onSortChange,
                     )
+                    ChipDropdown(
+                        label = stringResource(state.status.labelRes),
+                        icon = Icons.Outlined.FilterList,
+                        options = StatusFilter.entries.map { it to stringResource(it.labelRes) },
+                        selectedOption = state.status,
+                        onSelect = viewModel::onStatusChange,
+                    )
+                    if (state.tags.isNotEmpty()) {
+                        val tagOptions = listOf<Pair<String?, String>>(null to stringResource(R.string.filter_all_tags)) +
+                            state.tags.map { it.name to "${it.name} · ${it.count}" }
+                        ChipDropdown(
+                            label = state.selectedTag ?: stringResource(R.string.filter_tag),
+                            icon = Icons.AutoMirrored.Outlined.Label,
+                            options = tagOptions,
+                            selectedOption = state.selectedTag,
+                            onSelect = viewModel::onTagChange,
+                        )
+                    }
                 }
             }
 
@@ -336,12 +340,20 @@ fun LinksScreen(
                                             .padding(16.dp),
                                         contentAlignment = Alignment.Center,
                                     ) {
-                                        CircularProgressIndicator(
-                                            modifier = Modifier.size(24.dp),
-                                            strokeWidth = 2.dp,
-                                        )
+                                        if (state.loadingMore) {
+                                            CircularProgressIndicator(
+                                                modifier = Modifier.size(24.dp),
+                                                strokeWidth = 2.dp,
+                                            )
+                                        } else if (state.loadMoreFailed) {
+                                            TextButton(onClick = { viewModel.loadMore() }) {
+                                                Text(stringResource(R.string.action_retry))
+                                            }
+                                        }
                                     }
-                                    LaunchedEffect(state.links.size) { viewModel.loadMore() }
+                                    LaunchedEffect(state.links.size, state.loadMoreFailed) {
+                                        if (!state.loadMoreFailed) viewModel.loadMore()
+                                    }
                                 }
                             }
                         }
@@ -769,6 +781,7 @@ private fun LinkDetailSheet(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 24.dp)
                 .navigationBarsPadding()
                 .padding(bottom = 24.dp),
