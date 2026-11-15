@@ -1,5 +1,7 @@
 # Sink for Android
 
+![Android CI](https://github.com/wmy2981/sink-android/actions/workflows/android.yml/badge.svg)
+
 [Sink](https://github.com/ccbikai/Sink) 短链服务的第三方原生 Android 客户端。使用 Kotlin + Jetpack Compose 构建，界面遵循 Material Design 3，通过 Sink 的 REST API 连接任意自建实例。
 
 ## 功能
@@ -39,6 +41,16 @@ PROPS
 调试构建：`./gradlew assembleDebug`。
 
 单元测试：`./gradlew testDebugUnitTest`（覆盖 API 客户端、URL 规范化、标签与链接校验）。
+
+## CI 与 APK 产物
+
+GitHub Actions 工作流 `.github/workflows/android.yml` 在 push、PR、tag 与手动触发时执行：
+
+1. 运行单元测试；
+2. 构建 debug 与 release APK；
+3. 将两个 APK 上传为构建产物 `sink-android-<run_number>`，在 Actions 运行页面底部 Artifacts 下载。
+
+Release 签名通过仓库 Secrets 注入：`KEYSTORE_BASE64`、`KEYSTORE_PASSWORD`、`KEY_ALIAS`、`KEY_PASSWORD`。未配置 Secret 时（例如来自 fork 的 PR）自动回退为 debug 签名。
 
 ## 使用的 Sink API
 
