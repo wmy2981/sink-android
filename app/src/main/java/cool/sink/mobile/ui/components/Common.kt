@@ -47,10 +47,14 @@ import cool.sink.mobile.util.generateQrCode
 @Composable
 fun sinkTextFieldColors(
     unfocusedBorderColor: Color = MaterialTheme.colorScheme.outline,
-): TextFieldColors = OutlinedTextFieldDefaults.colors(
-    unfocusedBorderColor = unfocusedBorderColor,
-    placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
-)
+): TextFieldColors {
+    val placeholder = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+    return OutlinedTextFieldDefaults.colors(
+        unfocusedBorderColor = unfocusedBorderColor,
+        focusedPlaceholderColor = placeholder,
+        unfocusedPlaceholderColor = placeholder,
+    )
+}
 
 @Composable
 fun SinkLogo(size: Dp = 56.dp, modifier: Modifier = Modifier) {
