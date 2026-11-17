@@ -20,9 +20,11 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -37,6 +39,18 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cool.sink.mobile.R
 import cool.sink.mobile.util.generateQrCode
+
+/**
+ * Outlined text field colors that keep placeholders visibly lighter than typed text, so a hint
+ * such as "https://sink.example.com" can never be mistaken for real input.
+ */
+@Composable
+fun sinkTextFieldColors(
+    unfocusedBorderColor: Color = MaterialTheme.colorScheme.outline,
+): TextFieldColors = OutlinedTextFieldDefaults.colors(
+    unfocusedBorderColor = unfocusedBorderColor,
+    placeholderColor = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+)
 
 @Composable
 fun SinkLogo(size: Dp = 56.dp, modifier: Modifier = Modifier) {

@@ -85,6 +85,7 @@ import cool.sink.mobile.ui.components.EmptyState
 import cool.sink.mobile.ui.components.RemoteImage
 import cool.sink.mobile.ui.components.SwitchRow
 import cool.sink.mobile.ui.components.countryLabel
+import cool.sink.mobile.ui.components.sinkTextFieldColors
 import cool.sink.mobile.ui.vm.LinkEditViewModel
 import cool.sink.mobile.util.applyUtmValues
 import cool.sink.mobile.util.datePickerMillis
@@ -611,6 +612,7 @@ fun LinkEditScreen(
                         isError = state.googleError != null,
                         supportingText = { Text(state.googleError?.asString() ?: "") },
                         shape = MaterialTheme.shapes.large,
+                        colors = sinkTextFieldColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Next),
                     )
                     OutlinedTextField(
@@ -623,6 +625,7 @@ fun LinkEditScreen(
                         isError = state.appleError != null,
                         supportingText = { Text(state.appleError?.asString() ?: "") },
                         shape = MaterialTheme.shapes.large,
+                        colors = sinkTextFieldColors(),
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
                     )
                 }
@@ -667,6 +670,7 @@ fun LinkEditScreen(
                                     placeholder = { Text("https://…") },
                                     singleLine = true,
                                     shape = MaterialTheme.shapes.medium,
+                                    colors = sinkTextFieldColors(),
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Uri, imeAction = ImeAction.Done),
                                 )
                             }
@@ -840,6 +844,7 @@ private fun UtmField(
         placeholder = { Text(placeholder) },
         singleLine = true,
         shape = MaterialTheme.shapes.medium,
+        colors = sinkTextFieldColors(),
     )
 }
 

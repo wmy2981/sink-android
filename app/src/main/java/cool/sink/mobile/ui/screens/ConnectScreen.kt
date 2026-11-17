@@ -53,6 +53,7 @@ import cool.sink.mobile.R
 import cool.sink.mobile.data.SinkRepository
 import cool.sink.mobile.ui.asString
 import cool.sink.mobile.ui.components.SinkLogo
+import cool.sink.mobile.ui.components.sinkTextFieldColors
 import cool.sink.mobile.ui.vm.ConnectViewModel
 
 @Composable
@@ -101,6 +102,7 @@ fun ConnectScreen(
                 leadingIcon = { Icon(Icons.Outlined.Link, contentDescription = null) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
+                colors = sinkTextFieldColors(),
                 keyboardOptions = KeyboardOptions(
                     keyboardType = KeyboardType.Uri,
                     imeAction = ImeAction.Next,
@@ -128,6 +130,7 @@ fun ConnectScreen(
                 },
                 singleLine = true,
                 shape = MaterialTheme.shapes.large,
+                colors = sinkTextFieldColors(),
                 visualTransformation = if (tokenVisible) {
                     VisualTransformation.None
                 } else {

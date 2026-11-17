@@ -64,7 +64,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -107,6 +106,7 @@ import cool.sink.mobile.ui.components.InfoRow
 import cool.sink.mobile.ui.components.LinkFavicon
 import cool.sink.mobile.ui.components.QrCodeDialog
 import cool.sink.mobile.ui.components.TagPill
+import cool.sink.mobile.ui.components.sinkTextFieldColors
 import cool.sink.mobile.ui.copyToClipboard
 import cool.sink.mobile.ui.openUrl
 import cool.sink.mobile.ui.shareText
@@ -197,7 +197,7 @@ fun LinksScreen(
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(28.dp),
-                colors = OutlinedTextFieldDefaults.colors(
+                colors = sinkTextFieldColors(
                     unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
                 ),
             )
